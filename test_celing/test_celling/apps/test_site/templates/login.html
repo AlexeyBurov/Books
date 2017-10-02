@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html{% if LANGUAGE_CODE %} lang="{{ LANGUAGE_CODE }}"{% endif %}>
+
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load bootstrap3 %}
+        <title>{% block bootstrap3_title %}Вход{% endblock %}</title>
+        {% bootstrap_css %}
+        {% load static %}
+        <link href={% static "test_site/styles.css" %} rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        {% if 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+        {% block bootstrap3_extra_head %}{% endblock %}
+    </head>
+  <body>
+  {% if not 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+    {% block bootstrap3_extra_script %}{% endblock %}
+    <div class="container">
+        <h1>Панель управления</h1>
+        <label class="text-left">Для входа в панель управления введите Логин и Пароль</label>
+    </div>
+    <div class="row" style="position: absolute; top: 30%;width:100%">
+
+        <div class="col-lg-4"></div>
+        <div class="col-sm-12 col-lg-4 form-modal">
+            <form action="login.html" method="post">
+                {% csrf_token %}
+
+                {{ form.as_p }}
+                <button  class="btn btn-success align-right" type="submit">Войти</button>
+            </form>
+        </div>
+        <div class="col-lg-4"></div>
+    </div>
+    <div class="navbar-fixed-bottom footer">
+        <div class="text-center">
+            <p>ООО "ЭволюцияТорг" &copy 2017</p>
+        </div>
+    </div>
+    <script type="text/javascript" src="{% static 'test_site/js/core.js' %}"></script>
+  </body>
+</html>

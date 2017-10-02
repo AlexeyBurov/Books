@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить диллера{% endblock %}
+
+
+{% block content %}
+    <h1>Добавить дилера</h1>
+    <div class="container-fluid">
+    <form method="POST" action="add_dealer">
+        {% csrf_token %}
+        <label>Имя диллера</label>
+        <input name="dealer_name" class="form-control"  type="text" placeholder="Имя">
+        <label>Телефон диллера</label>
+        <input name="dealer_phone"  class="form-control" type="text" placeholder="Телефон">
+        <label>Email диллера также являеться Логином</label>
+        <input name="dealer_email"  class="form-control" type="text" placeholder="Email">
+        <label>Название фирмы</label>
+        <input name="dealer_firm_name"  class="form-control" type="text" placeholder="Фирма">
+        <label>Адресс</label>
+        <input name="dealer_address"  class="form-control" type="text" placeholder="Адресс">
+        <label>УНП</label>
+        <input name="dealer_unp"  class="form-control" type="text" placeholder="УНП">
+        <label>Максимальный депозит</label>
+        <input name="max_deposit"  class="form-control" type="number" placeholder="Депозит">
+        <label>Пароль для аккаунта</label>
+        <input name="dealer_password" class="form-control" type="password" placeholder="Пароль">
+        <input  class="btn btn-success pull-right" type="submit" value="Добавить заказ" style="margin-top: 10px">
+    </form>
+    </div>
+{% endblock %}
+
+
+
+

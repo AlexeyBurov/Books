@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Дилеры{% endblock %}
+
+
+{% block content %}
+    <h1>Дилеры</h1>
+    <table id="dealers-table">
+        <thead>
+            <td>id</td>
+            <td>Имя</td>
+            <td>Телефон</td>
+            <td>Email</td>
+            <td>Фирма</td>
+            <td>Адресс</td>
+            <td>УНП</td>
+            <td>Счёт</td>
+            <td>Действия</td>
+        </thead>
+        <tfoot>
+            <td>id</td>
+            <td>Имя</td>
+            <td>Телефон</td>
+            <td>Email</td>
+            <td>Фирма</td>
+            <td>Адресс</td>
+            <td>УНП</td>
+            <td>Счёт</td>
+            <td>Действия</td>
+        </tfoot>
+    </table>
+
+    <div class="modal fade" id="payment-dealer-tmpl" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <form action="dealer_payment">
+            {% csrf_token %}
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                  <input name="dealer_id" id="payment_dealer_id" type="hidden">
+                  <label>Сумма</label>
+                  <input name="payment_sum" type="number" class="form-control">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <input type="submit" class="btn btn-primary" value="Сохранить" style="margin-top: 0">
+              </div>
+            </div>
+        </form>
+      </div>
+    </div>
+    <div class="modal fade" id="edit-dealer-tmpl" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <form action="dealer_edit">
+            {% csrf_token %}
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                  <input name="dealer_id" id="payment_dealer_id" type="hidden">
+                  <label>Имя</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>Телефон</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>Email</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>Адресс</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>Фирма</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>УНП</label>
+                  <input name="payment_sum" type="text" class="form-control">
+                  <label>Счёт</label>
+                  <input name="payment_sum" type="number" class="form-control">
+                  <label>Депозит</label>
+                  <input name="payment_sum" type="number" class="form-control">
+                  <label>Удаление</label>
+                  <input type="checkbox" class="form-control" checked>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <input type="submit" class="btn btn-primary" value="Сохранить" style="margin-top: 0">
+              </div>
+            </div>
+        </form>
+      </div>
+    </div>
+    {% csrf_token %}
+    <div class="modal fade" id="view-dealer-tmpl" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true" >
+      <div class="modal-dialog" role="document" style="width: 80%">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="viewModalLabel"></h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="row">
+                  <div class="container-fluid" style="padding-bottom: 50px;margin-left: 70px">
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>№: </label><label class="pull-right" id="view_dialer_id"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Имя: </label><label class="pull-right" id="view_dialer_name"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Телефон: </label><label class="pull-right" id="view_dialer_phone"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Email: </label><label class="pull-right" id="view_dialer_email"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Фирма: </label><label class="pull-right" id="view_dialer_firm"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Адресс: </label><label class="pull-right" id="view_dialer_address"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>УНП: </label><label class="pull-right" id="view_dialer_unp"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text"><label>Счёт: </label><label class="pull-right"  id="view_dialer_amount"></label></p>
+                      </div>
+                  </div>
+                  <div class="col-sm-1"></div>
+                  <div class="col-sm-10">
+                      <table id="dealers-orders-table">
+                        <thead>
+                            <td>id</td>
+                            <td>№ матреиала</td>
+                            <td>Площадь потолка</td>
+                            <td>Периметр потолка</td>
+                            <td>Периметр гарпуна</td>
+                            <td>Периметр кривых</td>
+                            <td>Статус заказа</td>
+                            <td>Стоймость</td>
+                        </thead>
+                        <tfoot>
+                            <td>id</td>
+                            <td>№ матреиала</td>
+                            <td>Площадь потолка</td>
+                            <td>Периметр потолка</td>
+                            <td>Периметр гарпуна</td>
+                            <td>Периметр кривых</td>
+                            <td>Статус заказа</td>
+                            <td>Стоймость</td>
+                        </tfoot>
+                    </table>
+                  </div>
+                  <div class="col-sm-1"></div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block custom_script %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#dealers-table').DataTable({
+                ajax: '/get_dealer',
+                "order": [[ 0, "desc" ]],
+                "lengthMenu": [[20,50, 100, 200, -1], [20,50, 100, 200, "All"]],
+                "language": {
+                    "lengthMenu": "_MENU_ записей на странице",
+                    "zeroRecords": "0 строк нашли",
+                    "info": "Показаны страницы _PAGE_ из _PAGES_",
+                    "infoEmpty": "Строки не найдены",
+                    "search":    "Поиск: ",
+                    "infoFiltered": "(Отфильтрованный от _MAX_ Всего записей)",
+                    "paginate": {
+                        "first":      "Первый",
+                        "last":       "Последний",
+                        "next":       "Следующий",
+                        "previous":   "Предыдуший"
+                    },
+                },
+                responsive: true,
+                "columns": [{
+                    "data":function (row, type, val, meta) {
+                        if(row.for_remove) {
+                            return '<p style="background-color:red">'+row.id+'</p>'
+                        }else {
+                          return row.id
+                        }
+                    }
+                }, {
+                    "data": 'dealer_name'
+                }, {
+                    "data": 'dealer_phone'
+                }, {
+                    "data": 'dealer_email'
+                }, {
+                    "data": 'dealer_firm_name'
+                }, {
+                    "data": 'dealer_address'
+                }, {
+                    "data": 'dealer_unp'
+                }, {
+                    "data": 'dealer_amount'
+                },{
+                    "data" : function ( row, type, val, meta ) {
+                        return "<button class='btn btn-sm btn-success dealer-payment' data-toggle='modal' data-target='#payment-dealer-tmpl' data-num="+row.id+" data-label="+row.dealer_name+"><span class='glyphicon glyphicon-usd' style='padding:0px;'></span></button>"+
+                                "<button class='btn btn-sm btn-primary dealer-view' data-num="+row.id+" data-toogle='modal' data-target='#view-dealer-tmpl'><span class='glyphicon glyphicon-user' style='padding:0px;'></span></button>"+
+                                "<button class='btn btn-sm btn-warning dealer-edit' data-num="+row.id+"><span class='glyphicon glyphicon-pencil' style='padding:0px;'></span></button>"+
+                                "<button class='btn btn-sm btn-danger dealer-delete' data-num="+row.id+"><span class='glyphicon glyphicon-remove' style='padding:0px;'></span></button>"
+                    }
+                }]
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки{% endblock %}
+
+
+{% block content %}
+    <h1>Настройки</h1>
+    {% for setting in settings %}
+        <p>{{ setting }}</p>
+    {% endfor %}
+{% endblock %}

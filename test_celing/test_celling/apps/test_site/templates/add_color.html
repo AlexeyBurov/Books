@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить цвет{% endblock %}
+
+
+{% block content %}
+    <div class="container-fluid">
+    <h1>Добавить цвет</h1>
+      <form method="POST" action="add_color" class="form-group">
+        {% csrf_token %}
+        <label>Название цвета</label>
+        <input name="color_name" class="form-control" type="text" placeholder="Название">
+        <input  class="btn btn-success pull-right" type="submit" placeholder="Добавить материал">
+    </form>
+    </div>
+{% endblock %}

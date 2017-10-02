@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить материал{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid">
+    <h1>Добавить материал</h1>
+    <label>Группа материала</label>
+    <form method="POST" action="add_celling_material" class="form-group">
+        {% csrf_token %}
+        <select name="material_group" class="form-control">
+            {% for group in material_groups %}
+                <option value="{{group.id}}">{{ group.name }}</option>
+            {% endfor %}
+        </select>
+        <label>Название потолка</label>
+        <input name="celling_name" class="form-control" type="text" placeholder="Название">
+        <label>Ширина полотна</label>
+        <input name="celling_width" class="form-control" type="number" placeholder="Ширина полотна">
+        <label>Количество на складе метр погонный</label>
+        <input name="material_count" class="form-control" type="number" placeholder="Количество на складе метр погонный">
+        <input  class="btn btn-success pull-right" type="submit" placeholder="Добавить материал">
+    </form>
+</div>
+{% endblock %}

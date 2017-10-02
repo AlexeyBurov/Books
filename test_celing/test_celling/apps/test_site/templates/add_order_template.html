@@ -1,0 +1,59 @@
+<div class="row">
+    <div class="col-lg-2 visible-lg"></div>
+    <div class="col-lg-8 col-sm-12">
+        <div class="container-fluid">
+            <p>Заказ </p>
+            <form method="POST" action="add_order" style="margin-bottom: 150px">
+                {% csrf_token %}
+                <input type="hidden" name="material_id" value="{{ material.id }}">
+                <input type="hidden" name='dealer_id'>
+                <label>Материал</label>
+                    <select class="form-control" id="material_group" name="material_group">
+                        {% for material_group in material_group %}
+                            <option value="{{ material_group.id }}">{{ material_group.name }}</option>
+                        {% endfor %}
+                    </select>
+                {% if not user.groups.all.0.name == "dealer" %}
+                <label>Дилер</label>
+                <select class="form-control required" id="dealer_select">
+                    {% for dealer in dealers %}
+                        <option value="{{ dealer.id }}">{{ dealer.dealer_firm_name }}</option>
+                    {% endfor %}
+                </select>
+                <label>Полотно</label>
+                <select class="form-control" id="material_select">
+                </select>
+                <label>Длина материала рулон</label>
+                <input name="material_long_m" class="form-control" type="number" placeholder="Длинна материала метр погонный">
+                {% endif %}
+                <label>Цвет</label>
+                <select class="form-control" id="material_color" name="material_color"></select>
+                <label>Площадь потолка</label>
+                <input name="celling_s" class="form-control" value="{{ order.s_celling }}" type="text" placeholder="Площадь потолка">
+                <label>Пеиметр потолка</label>
+                <input name="celling_p" value="{{ order.p_celling }}" class="form-control" type="text" placeholder="Периметр потолка">
+                <label>Периметр гарпуна</label>
+                <input name="garpun_p" value="{{ order.p_garpun }}" class="form-control" type="text" placeholder="Периметр гарпуна">
+                <label>Периметр кривых</label>
+                <input name="p_curve" value="{{ order.p_curve }}" class="form-control" type="text" placeholder="Периметр кривых">
+                <label>Площадь полотна</label>
+                <input name="s_material" class="form-control" placeholder="Площадь потолка" value="0.0">
+                <input  class="btn btn-success pull-right" type="submit" value="Добавить заказ" style="margin-top: 10px">
+                {% if not user.groups.all.0.name == "dealer" %}
+                <select class="form-control pull-left" style="width: 20%; margin-top: 10px">
+                    <option value="1">Принят</option>
+                    <option value="2">Обработан</option>
+                    <option value="3">Готов</option>
+                    <option value="4">Оплачен</option>
+                    <option value="5">Закончен</option>
+                </select>
+                {% endif %}
+            </form>
+        </div>
+        <div id="error-message" hidden="hidden"></div>
+    </div>
+    <div class="col-lg-2 visible-lg"></div>
+    <script>
+        $('#material_group').trigger('change');
+    </script>
+</div>

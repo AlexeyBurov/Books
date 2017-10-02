@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Заказы{% endblock %}
+
+
+{% block content %}
+    <h1>Заказы</h1>
+    <table id="orders-table">
+        <thead>
+            <td>id</td>
+            <td>№ матреиала</td>
+            {% if not user.groups.all.0.name == "dealer" %}
+            <td>Дилер</td>
+            {% endif %}
+            <td>Площадь потолка</td>
+            <td>Периметр потолка</td>
+            <td>Периметр гарпуна</td>
+            <td>Периметр кривых</td>
+            <td>Статус заказа</td>
+            <td>Стоймость</td>
+        </thead>
+        <tfoot>
+            <td>id</td>
+            <td>№ матреиала</td>
+            {% if not user.groups.all.0.name == "dealer" %}
+            <td>Дилер</td>
+            {% endif %}
+            <td>Площадь потолка</td>
+            <td>Периметр потолка</td>
+            <td>Периметр гарпуна</td>
+            <td>Периметр кривых</td>
+            <td>Статус заказа</td>
+            <td>Стоймость</td>
+        </tfoot>
+    </table>
+{% endblock %}
+
+{% block custom_script %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#orders-table').DataTable({
+            {% if not user.groups.all.0.name == "dealer" %}
+            {{  "ajax: '/get_orders',"}}
+            {% else %}
+                {{  "ajax: '/get_orders?dealer_id="}}{{request.user.pk}}{{"',"}}
+            {% endif %}
+                "order": [[ 0, "desc" ]],
+                "lengthMenu": [[5,10,20,50, 100, 200, -1], [5,10,20,50, 100, 200, "All"]],
+                "language": {
+                    "lengthMenu": "_MENU_ записей на странице",
+                    "zeroRecords": "0 строк нашли",
+                    "info": "Показаны страницы _PAGE_ из _PAGES_",
+                    "infoEmpty": "Строки не найдены",
+                    "search":    "Поиск: ",
+                    "infoFiltered": "(Отфильтрованный от _MAX_ Всего записей)",
+                    "paginate": {
+                        "first":      "Первый",
+                        "last":       "Последний",
+                        "next":       "Следующий",
+                        "previous":   "Предыдуший"
+                    },
+                },
+                responsive: true,
+                "columns": [{
+                    "data": 'id'
+                }, {
+                    {% if  user.groups.all.0.name == "dealer" %}
+                    "data": 'celling.material_group.name'
+                    {% else %}
+                    "data": 'celling.name'
+                    {% endif %}
+                }
+                    {% if not user.groups.all.0.name == "dealer" %},{
+                    "data": function ( row, type, val, meta ) {
+                        return row.dealer.dealer_firm_name
+                    }
+                }{% endif %}, {
+                    "data": 's_celling'
+                }, {
+                    "data": 'p_celling'
+                }, {
+                    "data": 'p_garpun'
+                }, {
+                    "data": 'p_curve'
+                }, {
+                    "data": 'order_status'
+                }, {
+                    "data": 'celling_price'
+                }]
+            });
+        });
+    </script>
+{% endblock %}
+

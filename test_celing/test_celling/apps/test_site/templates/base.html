@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html{% if LANGUAGE_CODE %} lang="{{ LANGUAGE_CODE }}"{% endif %}>
+
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load bootstrap3 %}
+        <title>{% block title %}{% endblock %}</title>
+        {% bootstrap_css %}
+        {% load static %}
+        <link href='{% static "test_site/styles.css" %}' rel="stylesheet">
+        <link href='{% static "test_site/css/jasny-bootstrap.min.css" %}' rel="stylesheet">
+        <!--<link href='{% static "test_site/lib/data-tables/DT_bootstrap.css" %}' rel="stylesheet">-->
+        <link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <!--<link href='{% static "test_site/lib/data-tables/dataTables.responsive.css" %}' rel="stylesheet">-->
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        {% bootstrap_javascript jquery=True %}
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    </head>
+    <body>
+        <div class="navmenu navmenu-default navmenu-fixed-left offcanvas" >
+          <a class="navmenu-brand" href="/">Потолки</a>
+          <ul class="nav navmenu-nav">
+            <li class="dropdown">
+              <a href="orders" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-briefcase"></span>Заказы<b class="caret"></b></a>
+              <ul class="dropdown-menu navmenu-nav">
+                <li class="link"><a href="add_order_start">Добавить заказ</a></li>
+                <li class="link"><a href="orders">Список заказов</a></li>
+              </ul>
+            </li>
+              {% if not user.groups.all.0.name == "dealer" %}
+            <li class="dropdown">
+              <a href="dealers" class="dropdown-toggle" data-toggle="dropdown"> <span class="glyphicon glyphicon-user"></span>Диллеры<b class="caret"></b></a>
+              <ul class="dropdown-menu navmenu-nav">
+                <li class="link"><a href="add_dealer_page">Добавить диллера</a></li>
+                <li class="link"><a href="dealers">Список диллеров</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <a href="materials" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-picture"></span>Материлы<b class="caret"></b></a>
+              <ul class="dropdown-menu navmenu-nav">
+                <li class="link"><a href="add_material">Добавить материал</a></li>
+                <li class="link"><a href="materials">Список материалов</a></li>
+                <li class="link"><a href="expense_page">Расход материалов</a></li>
+                <li class="link"><a href="material_group_add">Добавить группу материалов</a></li>
+                <li class="link"><a href="material_groups">Группы материалов</a></li>
+                <li class="link"><a href="add_material_color">Добавить Цвет</a></li>
+                <li class="link"><a href="material_colors">Список цветов</a></li>
+              </ul>
+            </li>
+          {% endif %}
+          {% if user.groups.all.0.name == "dealer" %}
+            <li class="link"><a href="finance_dealer"><span class="glyphicon glyphicon-usd"></span>Финансовый отчёт</a></li>
+
+          {% endif %}
+          {% if not user.groups.all.0.name == "dealer" %}
+            <li class="link"><a href="finance"><span class="glyphicon glyphicon-usd"></span>Финансовый отчёт</a></li>
+            <li class="link"><a href="settings"><span class="glyphicon glyphicon-cog"></span>Настройки</a></li>
+          {% endif %}
+          </ul>
+        </div>
+
+        <div class="navbar navbar-default navbar-fixed-top" >
+          <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu" data-canvas="body" id="mn-btn">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+            <div class="row header-login">
+                <div>
+                    {% if request.user.username != '' %}
+                        <p style="display: inline"><span class="glyphicon glyphicon-user"></span>{{request.user.username}}</p>
+                    {% else %}
+                        <p style="display: inline"><span class="glyphicon glyphicon-user"></span>{{request.user.email}}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="logout">Выйти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top:50px;">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="navbar-fixed-bottom footer">
+            <div class="text-center">
+                <p>Evolution &copy 2017</p>
+            </div>
+        </div>
+        <script type="text/javascript" src="{% static 'test_site/js/core.js' %}"></script>
+        <script type="text/javascript" src="{% static 'test_site/js/jasny-bootstrap.min.js' %}"></script>
+        <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js" type="text/javascript"></script>
+
+        {% block custom_script %}{% endblock %}
+        <script>
+            $('#mn-btn').trigger('click');
+            $('#mn-btn').trigger('click');
+            $('#mn-btn').trigger('click');
+            $('#mn-btn').trigger('click');
+        </script>
+        <div class="navmenu navmenu-default navmenu-fixed-left offcanvas offcanvas-clone"></div>
+    </body>
+</html>

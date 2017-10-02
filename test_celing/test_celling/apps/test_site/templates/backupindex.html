@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html{% if LANGUAGE_CODE %} lang="{{ LANGUAGE_CODE }}"{% endif %}>
+
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load bootstrap3 %}
+        <title>{% block bootstrap3_title %}Потолки{% endblock %}</title>
+        {% bootstrap_css %}
+        {% load static %}
+        <link href={% static "test_site/styles.css" %} rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        {% if 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+        {% block bootstrap3_extra_head %}{% endblock %}
+    </head>
+
+    <body>
+    {% if not 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+    {% block bootstrap3_extra_script %}{% endblock %}
+    {# Menu fixed left #}
+
+    <div class="navbar navbar-inverse navbar-fixed-left">
+        <a class="navbar-brand pgn" href="#main">Потолки</a>
+        <div style="position:absolute;right:10px;">
+            <a class="btn btn-lg menu-hide">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+        </div>
+        <div class="accordion">
+            <section id="dealers">
+                <h2><a href="#dealers">Диллеры</a></h2>
+                <div>
+                    <a class="pgn" href="#add_dealer">-Добавить диллера</a>
+                    <a class="pgn" href="#dialer_list">-Список диллеров</a>
+                </div>
+            </section>
+            <section id="orders">
+                <h2><a href="#orders">Заказы</a></h2>
+                <div>
+                    <a href="#add_order" class="pgn">-Добавить заказ</a>
+                    <a href='#orders_list' class="pgn">-Список заказов</a>
+                    <a href='#finance_review' class="pgn">-Финансовый отчёт</a>
+                </div>
+            </section>
+            <section id="material">
+                  <h2><a href="#material">Материлы</a></h2>
+                  <div>
+                    <a class="pgn" href="#add_material">-Добавить материал</a>
+                    <a class="pgn" href="#materials_list">-Список материалов</a>
+                    <a class="pgn" href="#materials_expense">-Расход материалов</a>
+                  </div>
+            </section>
+            <section>
+                <h2><a href="#settings" class="pgn">Настройки</a></h2>
+            </section>
+        </div>
+    </div>
+        <div class="container main-content">
+            <div class="row header-login">
+                <div>
+                    {% if request.user.username != '' %}
+                        <p style="display: inline">{{request.user.username}}</p>
+                    {% else %}
+                        <p style="display: inline">{{request.user.email}}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="logout">Выйти</a>
+                </div>
+            </div>
+            <section id="main">
+                <h1>Главная</h1>
+            </section>
+            <section id="add_dealer" hidden="hidden">
+                <h1>Добавить дилера</h1>
+                <div class="row">
+                    <div class="col-lg-2 visible-lg"></div>
+                    <div class="col-lg-8 col-sm-12">
+                        <div class="container-fluid">
+                            <form method="POST" action="add_dealer">
+                                {% csrf_token %}
+                                <label>Имя диллера</label>
+                                <input name="dealer_name" class="form-control"  type="text" placeholder="Площадь потолка">
+                                <label>Телефон диллера</label>
+                                <input name="dealer_phone"  class="form-control" type="text" placeholder="Периметр потолка">
+                                <label>Email диллера также являеться Логином</label>
+                                <input name="dealer_email"  class="form-control" type="text" placeholder="Периметр гарпуна">
+                                <label>Название фирмы</label>
+                                <input name="dealer_firm_name"  class="form-control" type="text" placeholder="Периметр кривых">
+                                <label>Адресс</label>
+                                <input name="dealer_address"  class="form-control" type="text" placeholder="Периметр кривых">
+                                <label>УНП</label>
+                                <input name="dealer_unp"  class="form-control" type="text" placeholder="Периметр кривых">
+                                <label>Пароль для аккаунта</label>
+                                <input name="dealer_password" class="form-control" type="password" placeholder="Пароль">
+                                <input  class="btn btn-success align-left" type="submit" value="Добавить заказ">
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 visible-lg"></div>
+                </div>
+            </section>
+            <section id="dialer_list" hidden="hidden">
+                <h1>Список дилеров</h1>
+                <div style="overflow: scroll;height: 500px">
+                    <table width="100%" class="celling-table" >
+                        <thead>
+                            <td>ID</td>
+                            <td>ФИО</td>
+                            <td>Email</td>
+                            <td>Телефон</td>
+                            <td>Фирма</td>
+                            <td>УНП</td>
+                        </thead>
+                        <tbody>
+                            {% for dealer in dealers %}
+                                <tr data-num="{{ dealer.id }}" class="dealer-pdp">
+                                    <td>{{ dealer.id }}</td>
+                                    <td>{{ dealer.dealer_name }}</td>
+                                    <td>{{ dealer.dealer_email }}</td>
+                                    <td>{{ dealer.dealer_phone }}</td>
+                                    <td>{{ dealer.dealer_firm_name }}</td>
+                                    <td>{{ dealer.dealer_unp }}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="add_material" hidden="hidden">
+                <h1>Добавить материал</h1>
+                <div class="row">
+                    <div class="col-lg-2 visible-lg"></div>
+                    <div class="col-lg-8 col-sm-12">
+                        <div class="container-fluid">
+                            <form method="POST" action="add_celling_material">
+                                {% csrf_token %}
+                                <label>Название потолка</label>
+                                <input name="celling_name" class="form-control" type="text" placeholder="Название">
+                                <label>Код цвета</label>
+                                <input name="celling_color" class="form-control" type="number" placeholder="Цвет">
+                                <label>Ширина полотна</label>
+                                <input name="celling_width" class="form-control" type="number" placeholder="Ширина полотна">
+                                <label>Цена за метр погонный</label>
+                                <input name="celling_price" class="form-control" type="number" placeholder="Цена">
+                                <input  class="btn btn-success align-left" type="submit" placeholder="Добавить материал">
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 visible-lg"></div>
+                </div>
+            </section>
+            <section id="add_order" hidden="hidden">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h1>Добаить Заказ</h1>
+                    </div>
+                    <div class="col-lg-3 visible-lg"></div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="container-fluid" class="text-center">
+                            <form id="order_file_form" class="text-center" >
+                                {% csrf_token %}
+                                <div >
+                                    <span  class = "btn btn-default btn-file" >
+                                        Загрузить<input type="file" name="file">
+                                    </span>
+                                </div>
+                                <div class="form-group" style="padding-top: 100px;">
+                                    <button class="btn btn-default" id="send_file">Отправить файл</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="for_add_order_form">
+
+                    </div>
+                    <div class="col-lg-3 visible-lg"></div>
+                </div>
+            </section>
+            <section id="orders_list" hidden="hidden">
+                <h1>Список заказов</h1>
+                <div style="overflow: scroll;height: 500px">
+                    <table class="celling-table" style="border: none; overflow: scroll;">
+                        <thead>
+                            <td>ID</td>
+                            <td>Материал</td>
+                            <td>Клиент</td>
+                            <td>Площадь потолка</td>
+                            <td>Периметр потолка</td>
+                            <td>Периметр гарпуна</td>
+                            <td>Периметр кривых</td>
+                            <td>Цена</td>
+                        </thead>
+                        <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ celling.name }}</td>
+                                <td>{{ order.dealer_id }}</td>
+                                <td>{{ order.s_celling }}</td>
+                                <td>{{ order.p_celling }}</td>
+                                <td>{{ order.p_garpun }}</td>
+                                <td>{{ order.p_curve }}</td>
+                                <td>{{ order.celling_price }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="finance_review" hidden="hidden">
+                <h1>Финансовый отчёт</h1>
+            </section>
+            <section id="materials_list" hidden="hidden">
+                <div style="width: 500px;overflow: scroll;">
+                <table class="celling-table" style="border: none;">
+                    <thead>
+                        <td>ID</td>
+                        <td>Имя</td>
+                        <td>Цвет</td>
+                        <td>Щирина</td>
+                        <td>Цена</td>
+                    </thead>
+                    <tbody>
+                    {% for celling in ceilings %}
+                        <tr>
+                            <td>{{ celling.id }}</td>
+                            <td>{{ celling.name }}</td>
+                            <td>{{ celling.color }}</td>
+                            <td>{{ celling.celling_width }}</td>
+                            <td>{{ celling.celling_price }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </section>
+            <section id="materials_expense" hidden="hidden">
+                <h1>Расход материалов</h1>
+            </section>
+            <section id="settings" hidden="hidden">
+                <div><h1>Настройки</h1></div>
+            </section>
+        <div class="navbar-fixed-bottom footer">
+            <div class="text-center">
+                <p>ООО "ЭволюцияТорг" &copy 2017</p>
+            </div>
+        </div>
+        </div>
+        <div class="modal fade" id="dealer-pdp-page" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal_dealer_name"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <form action="dealer_update">
+                  <div class="modal-body">
+                        <input name="dealer_id" type="hidden">
+                        <label>Имя диллера</label>
+                        <input name="dealer_name" placeholder="Имя диллера">
+                        <label>Email</label>
+                        <input name="dealer_email" placeholder="Email">
+                        <label>Телефон</label>
+                        <input name="dealer_phone" placeholder="Телефон">
+                        <label>Фирма</label>
+                        <input name="dealer_firm_name" placeholder="Название фирмы">
+                        <label>УНП</label>
+                        <input name="dealer_unp" placeholder="УНП">
+                        <label>Адресс</label>
+                        <input name="dealer_address" placeholder="Адресс">
+                        <p>Сумма на счету <span id="dealer_amount"></span></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+                  </div>
+              </form>
+            </div>
+          </div>
+        </div>
+    </body>
+
+    <script type="text/javascript" src="{% static 'test_site/js/core.js' %}"></script>
+
+</html>

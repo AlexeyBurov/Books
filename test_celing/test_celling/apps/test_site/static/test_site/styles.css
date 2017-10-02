@@ -1,0 +1,129 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  padding: 50px 0 0 0;
+}
+
+.navbar-toggle {
+  float: left;
+  margin-left: 15px;
+}
+
+@media (min-width: 0) {
+  .navbar-toggle {
+    display: block; /* force showing the toggle */
+  }
+}
+
+@media (min-width: 992px) {
+  body {
+    padding: 0;
+  }
+  .navbar {
+    right: auto;
+    background: none;
+    border: none;
+  }
+}
+
+.header-login{
+    position: fixed;
+    height: 50px;
+    width: auto;
+    top:0;
+    right: 0;
+    padding-right: 30px;
+    padding-left: 10px;
+    background: #009999;
+}
+
+.header-login div{
+    padding-top: 10%;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+    color:white;
+
+}
+
+.header-login a{
+    text-decoration: none;
+    color: white;
+}
+
+.navbar-toggle{
+    background: #009999;
+    color:white;
+}
+
+.navbar-default .navbar-toggle .icon-bar{
+    background-color: white;
+}
+
+
+li.dropdown, li.link{
+    width: 299px;
+    background: linear-gradient(to left, rgba(21, 21, 21, 0.11) 50%, #009999 50%);
+    background-size: 200% 100%;
+    background-position:right bottom;
+    transition:all 0.5s ease;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.navmenu-default .navmenu-nav > li > a, .navbar-default .navbar-offcanvas .navmenu-nav > li > a{
+    color: white;
+}
+
+#error-message{
+    position: fixed;
+    bottom: 30px;
+    right: 0;
+    border-radius: 15px;
+    background-color: #ff1e08;
+    color: white;
+    padding: 10px;
+}
+
+
+li.dropdown:hover ,li:hover{
+    background-position:left bottom;
+}
+
+li > a > span{
+    padding: 5px;
+}
+
+input[type="submit"]{
+    margin-top: 30px;
+}
+
+.glyphicon{
+    padding: 5px;
+    color: white;
+}
+
+.dropdown-menu{
+    background-color: rgba(0,99,99,0.86)
+}
+
+.dropdown-menu>li>a{
+    padding-top:10px;
+    padding-bottom: 10px;
+}
+
+.navmenu-nav.dropdown-menu{
+    margin-top: 5px;
+}
+
+.footer{
+    background: rgba(48, 48, 48, 0.82);
+    color: white;
+}
+
+.info-text{
+  font-size: 25px;
+    color: rgba(52,52,52,0.82);
+}
