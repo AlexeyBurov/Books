@@ -62,6 +62,26 @@ body {
     background-color: white;
 }
 
+.dataTables_wrapper{
+    border: 1px solid #a8a8a8;
+    text-align: center;
+    padding: 10px;
+}
+.dataTables_wrapper tr, td {
+    border: 1px solid #a8a8a8;
+}
+
+.finance-info{
+    font-weight: bold;
+    font-size: 15px;
+    color: #a8a8a8
+}
+
+.finance-info span{
+    font-weight: normal;
+    color: black;
+
+}
 
 li.dropdown, li.link{
     width: 299px;
@@ -124,6 +144,12 @@ input[type="submit"]{
 }
 
 .info-text{
-  font-size: 25px;
-    color: rgba(52,52,52,0.82);
+  font-size: 20px;
+    color: rgba(120, 120, 120, 0.82);
+}
+
+.info-text label{
+    font-weight: normal;
+    font-size: 15px;
+    color: black;
 }

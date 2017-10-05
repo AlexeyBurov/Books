@@ -29,12 +29,17 @@ urlpatterns = [
     url(r'^material_group_info$', views.get_available_colors),
     url(r'^materials_expense$', views.materials_expense),
     url(r'^expense_page$', views.expense_page),
-    url(r'^add_color_api$', views.add_material_api),
+    url(r'^add_color_api$', views.add_color_api),
     url(r'^material_group_add$', views.add_material_group_tmpl),
+    url(r'^add_material_group_api$', views.add_material_group_api),
     url(r'^add_material_color$', views.add_material_color),
     url(r'^material_colors$', views.colors_list_tmpl),
     url(r'^get_colors_table$', views.get_colors_table),
     url(r'^materials_groups_json$', views.groups_json),
-    url(r'^delete_dealer$', views.delete_dealer)
+    url(r'^delete_dealer$', views.delete_dealer),
+    url(r'^add_material_api$', views.add_material_api),
+    url(r'^finance_orders_json$', views.finance_orders),
+    url(r'^get_materials_json$', views.get_materials_json),
+    url(r'^dealer_edit_api$', views.dealer_edit_api)
 ]
 

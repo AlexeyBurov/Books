@@ -1,10 +1,84 @@
 {% extends "base.html" %}
 
 {% block title %}Список материалов{% endblock %}
-
-
 {% block content %}
-    <h1>Список материалов</h1>
+    <div class="container-fluid">
+        <h1>Список материалов</h1>
+        <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8">
+            <table id="materials_table">
+                <thead>
+                    <td>id</td>
+                    <td>Группа</td>
+                    <td>Название</td>
+                    <td>Ширина полотна</td>
+                    <td>Базовая цена</td>
+                    <td>Остаток</td>
+                </thead>
+                <tfoot>
+                    <td>id</td>
+                    <td>Группа</td>
+                    <td>Название</td>
+                    <td>Ширина полотна</td>
+                    <td>Базовая цена</td>
+                    <td>Остаток</td>
+                </tfoot>
+            </table>
+        </div>
+        <div class="col-sm-2"></div>
+        </div>
 
+  </div>
 
+{% endblock %}
+
+{% block custom_script %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#materials_table').DataTable({
+                ajax: '/get_materials_json',
+                "order": [[ 0, "desc" ]],
+                "lengthMenu": [[20,50, 100, 200, -1], [20,50, 100, 200, "All"]],
+                "language": {
+                    "lengthMenu": "_MENU_ записей на странице",
+                    "zeroRecords": "0 строк нашли",
+                    "info": "Показаны страницы _PAGE_ из _PAGES_",
+                    "infoEmpty": "Строки не найдены",
+                    "search":    "Поиск: ",
+                    "infoFiltered": "(Отфильтрованный от _MAX_ Всего записей)",
+                    "paginate": {
+                        "first":      "Первый",
+                        "last":       "Последний",
+                        "next":       "Следующий",
+                        "previous":   "Предыдуший"
+                    },
+                },
+                responsive: true,
+                "columns": [{
+                    "data": function(row,type,val,meta){
+                        if(row.for_remove){
+                            return '<span style="background-color: red">'+row.id+'</span>'
+                        }else {
+                            return row.id
+                        }
+                    }
+                }, {
+                    "data": function(row, type,val,meta){
+                        return row.material_group.name
+                    }
+                },{
+                    'data': 'name'
+                },{
+                    'data': 'celling_width'
+                }, {
+                    "data": function(row, type,val,meta){
+                        return row.material_group.default_price
+                    }
+                }, {
+                    'data': 'count_meters_pagon'
+                }]
+            });
+        });
+    </script>
 {% endblock %}

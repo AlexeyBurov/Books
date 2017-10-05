@@ -7,19 +7,107 @@
     <h1>Финансы</h1>
     <div class="container-fluid">
         <div class="row">
-            <div class="text-center"><p>Date: <input type="text" id="datepicker"></p></div>
-            <div class="col-sm-4">
-                <p class="finance-info"></p>
-                <p class="finance-info"></p>
-                <p class="finance-info"></p>
+            <div class="text-center"><p>Дата: <input type="text" id="datepicker"></p></div>
+            <div class="col-lg-3">
+                <p class="finance-info">Количество заказов: <span id="finance-count-orders"></span></p>
             </div>
-            <div class="col-sm-4"></div>
+            <div class="col-lg-3">
+                <p class="finance-info">Сумма заказов: <span id="finance-sum-orders"></span> $</p>
+            </div>
+            <div class="col-lg-3">
+                <p class="finance-info">Площадь матреила: <span id="finance-material-expensive"></span> м. кв.</p>
+            </div>
+            <div class="col-lg-3">
+                <p class="finance-info">Периметр гарпуна: <span id="finance-p-garpun"></span> м. погон.</p>
+            </div>
+            <div class="col-sm-12" id="for_table"></div>
+
             <div class="col-sm-4"></div>
         </div>
     </div>
     <script>
     $( function() {
-        $( "#datepicker" ).datepicker();
+        $( "#datepicker" ).datepicker({
+            changMonth:true,
+            changeDay: true,
+            changeYear: true,
+            dateFormat: 'yy-mm-dd',
+            defaultDate: new Date()
+        });
   } );
+    </script>
+{% endblock %}
+{% block custom_script %}
+    <script type="text/javascript">
+    let date = new Date();
+    $('#datepicker').val(date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2));
+
+    $(document).on('change','#datepicker',function(){
+        let current_date = $('#datepicker').val();
+        $.ajax({
+            url:'finance_orders_json?date='+current_date,
+            type:'get',
+            success: function(data){
+                $('#for_table').html('<table id="finance-order-table">'+
+            '<thead>'+
+                '<td>Дата</td>'+
+                '<td>Дилер</td>'+
+                '<td>Площадь потолка</td>'+
+                '<td>Периметр гарпуна</td>'+
+                '<td>Стоймость заказа</td>'+
+            '</thead>'+
+            '<tfoot>'+
+                '<td>Дата</td>'+
+                '<td>Дилер</td>'+
+                '<td>Площадь потолка</td>'+
+                '<td>Периметр гарпуна</td>'+
+                '<td>Стоймость заказа</td>'+
+            '</tfoot>'+
+        '</table>');
+                result = JSON.parse(data);
+                $('#finance-count-orders').html(result.count_orders);
+                $('#finance-sum-orders').html(result.sum_orders);
+                $('#finance-material-expensive').html(result.celling_s);
+                $('#finance-p-garpun').html(result.p_garpun);
+                let orders = JSON.parse(result.orders);
+                $('#finance-order-table').DataTable({
+                    data: orders,
+                    "order": [[ 0, "desc" ]],
+                    "lengthMenu": [[20,50, 100, 200, -1], [20,50, 100, 200, "All"]],
+                    "language": {
+                        "lengthMenu": "_MENU_ записей на странице",
+                        "zeroRecords": "0 строк нашли",
+                        "info": "Показаны страницы _PAGE_ из _PAGES_",
+                        "infoEmpty": "Строки не найдены",
+                        "search":    "Поиск: ",
+                        "infoFiltered": "(Отфильтрованный от _MAX_ Всего записей)",
+                        "paginate": {
+                            "first":      "Первый",
+                            "last":       "Последний",
+                            "next":       "Следующий",
+                            "previous":   "Предыдуший"
+                        },
+                    },
+                    responsive: true,
+                    "columns": [{
+                        "data": 'order_date'
+                    }, {
+                        "data": function(row, type, val, meta){
+                            return row.dealer.dealer_firm_name;
+                        }
+                    }, {
+                        'data': "s_celling"
+                    }, {
+                        'data': "p_garpun"
+                    }, {
+                        'data': "celling_price"
+                    }]
+                });
+            }
+        });
+
+
+    });
+    $('#datepicker').trigger('change');
     </script>
 {% endblock %}

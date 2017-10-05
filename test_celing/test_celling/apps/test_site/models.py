@@ -80,28 +80,30 @@ class Dealer(models.Model):
         )
 
 
+class Balance(models.Model):
+    id = models.AutoField(primary_key=True)
+    dealer = models.ForeignKey(Dealer, null=False)
+    count = models.FloatField(null=False, default=0.0)
+
+
 class Order(models.Model):
     id = models.AutoField(primary_key=True)
-    celling = models.ForeignKey(Celling)
+    celling = models.ForeignKey(Celling, null=True)
     material_group = models.ForeignKey(MaterialGroup, null=True)
-    dealer_id = models.BigIntegerField()
-    dealer_obj = models.ForeignKey(Dealer, default=None)
+    dealer_obj = models.ForeignKey(Dealer, default=None, null=True)
     s_celling = models.FloatField(null=True)
     p_celling = models.FloatField(null=True)
     p_garpun = models.FloatField(null=True)
     p_curve = models.FloatField(null=True)
-    material_long = models.FloatField(null=False, default=0.0)
+    material_long = models.FloatField(null=True, default=0.0)
     celling_price = models.FloatField(null=True)
     order_status = models.IntegerField(null=False, default=1)
-    order_date = models.DateTimeField(default=datetime.datetime.now, blank=True)
+    order_date = models.DateField(default=datetime.datetime.now, blank=False)
     for_remove = models.BooleanField(null=False, default=False)
 
     def to_json(self):
-        return dict(
+        result = dict(
             id=self.id,
-            celling=self.celling.to_json(),
-            dealer_id=self.dealer_id,
-            dealer=self.dealer_obj.to_json(),
             s_celling=self.s_celling,
             p_celling=self.p_celling,
             p_garpun=self.p_garpun,
@@ -109,8 +111,18 @@ class Order(models.Model):
             material_long=self.material_long,
             celling_price=self.celling_price,
             order_status=self.order_status,
+            order_date=str(self.order_date),
             for_remove=self.for_remove
         )
+        if self.dealer_obj is not None:
+            result['dealer'] = self.dealer_obj.to_json()
+        else:
+            result['dealer'] = {'dealer_firm_name': 'None'}
+        if self.celling is not None:
+            result['celling'] = self.celling.to_json()
+        else:
+            result['celling'] = {'name': 'None'}
+        return result
 
 
 class Payment(models.Model):

@@ -5,8 +5,8 @@
     <div class="container-fluid">
         <h1>Группы материалов</h1>
         <div class="row">
-        <div class="col-sm-3"></div>
-        <div class="col-sm-6">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8">
             <table id="materials_group_table">
                 <thead>
                     <td>id</td>
@@ -22,7 +22,7 @@
                 </tfoot>
             </table>
         </div>
-        <div class="col-sm-3"></div>
+        <div class="col-sm-2"></div>
         </div>
 
   </div>
@@ -58,7 +58,13 @@
                 }, {
                     'data': "default_price"
                 }, {
-                    'colors': 'colors'
+                    'data': function(row,type,val,meta){
+                        let result = '';
+                        for(color of JSON.parse(row.colors)){
+                            result += color.fields.name + ','
+                        }
+                        return result.slice(0,result.length-1);
+                    }
                 }]
             });
         });

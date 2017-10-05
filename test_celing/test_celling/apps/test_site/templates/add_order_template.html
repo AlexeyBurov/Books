@@ -5,26 +5,28 @@
             <p>Заказ </p>
             <form method="POST" action="add_order" style="margin-bottom: 150px">
                 {% csrf_token %}
-                <input type="hidden" name="material_id" value="{{ material.id }}">
-                <input type="hidden" name='dealer_id'>
+                <input type="hidden" name="material_id" >
+                <input type="hidden" id="order_dealer_id" name='dealer_id' value="{{ dealer.id }}">
                 <label>Материал</label>
-                    <select class="form-control" id="material_group" name="material_group">
-                        {% for material_group in material_group %}
-                            <option value="{{ material_group.id }}">{{ material_group.name }}</option>
-                        {% endfor %}
-                    </select>
+                <select class="form-control" id="material_group" name="material_group">\
+                    {% for material_group in material_group %}
+                        <option value="{{ material_group.id }}">{{ material_group.name }}</option>
+                    {% endfor %}
+                </select>
                 {% if not user.groups.all.0.name == "dealer" %}
                 <label>Дилер</label>
                 <select class="form-control required" id="dealer_select">
+                    <option>Выберите дилера</option>
                     {% for dealer in dealers %}
                         <option value="{{ dealer.id }}">{{ dealer.dealer_firm_name }}</option>
                     {% endfor %}
                 </select>
                 <label>Полотно</label>
                 <select class="form-control" id="material_select">
+                    <option>Выберите материал</option>
                 </select>
                 <label>Длина материала рулон</label>
-                <input name="material_long_m" class="form-control" type="number" placeholder="Длинна материала метр погонный">
+                <input name="material_long_m" class="form-control" type="text" value="0.0" placeholder="Длинна материала метр погонный">
                 {% endif %}
                 <label>Цвет</label>
                 <select class="form-control" id="material_color" name="material_color"></select>
@@ -37,7 +39,7 @@
                 <label>Периметр кривых</label>
                 <input name="p_curve" value="{{ order.p_curve }}" class="form-control" type="text" placeholder="Периметр кривых">
                 <label>Площадь полотна</label>
-                <input name="s_material" class="form-control" placeholder="Площадь потолка" value="0.0">
+                <input name="s_material" class="form-control" placeholder="Площадь потолка" value=0,0 type="text">
                 <input  class="btn btn-success pull-right" type="submit" value="Добавить заказ" style="margin-top: 10px">
                 {% if not user.groups.all.0.name == "dealer" %}
                 <select class="form-control pull-left" style="width: 20%; margin-top: 10px">
@@ -55,5 +57,7 @@
     <div class="col-lg-2 visible-lg"></div>
     <script>
         $('#material_group').trigger('change');
+        $('#material_select').trigger('change');
+        $('#dealer_select').trigger('change');
     </script>
 </div>

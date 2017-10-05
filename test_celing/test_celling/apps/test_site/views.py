@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib.auth import login, logout
@@ -8,7 +9,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import FormView
 
-from test_celling.apps.test_site.models import Celling, MaterialDealerPrice, Payment, MaterialGroup, MaterialColor
+from test_celling.apps.test_site.models import Celling, MaterialDealerPrice, Payment, MaterialGroup, MaterialColor, \
+    Balance
 from test_celling.apps.test_site.models import Dealer
 from test_celling.apps.test_site.models import Order
 
@@ -102,7 +104,7 @@ def add_dealer(request):
         dealer_max_deposit = request.POST.get('max_deposit').replace(',', '.')
         password_for_dealer = request.POST.get('dealer_password')
         group = Group.objects.get(name='dealer')
-        user = User(username=dealer_email, password=password_for_dealer)
+        user = User.objects.create_user(username=dealer_email, email=dealer_email, password=password_for_dealer)
         user.save()
         group.user_set.add(user)
         user.groups.add(group)
@@ -154,8 +156,7 @@ def save_file(request):
     client_name = lines[13]
     client_address = lines[14]
     client_phone = lines[15]
-    order = Order(s_celling=s_celling, p_celling=p_celling, p_garpun=p_garpun, p_curve=p_curves, celling_id=1,
-                  dealer_id=1)
+    order = Order(s_celling=s_celling, p_celling=p_celling, p_garpun=p_garpun, p_curve=p_curves, celling_id=1)
     dealers_list = Dealer.objects.all()
     dealer = None
     if dealers_list.filter(user_id=request.user.pk):
@@ -198,24 +199,48 @@ def colors_list_tmpl(request):
 @group_required('manager', 'dealer')
 def add_order(request):
     if request.method == 'POST':
-        material_id = request.POST.get('material_id')
-        dealer_id = request.POST.get('dealer_id')
-        celling_s = request.POST.get('celling_s').replace(',', '.')
-        celling_p = request.POST.get('celling_p').replace(',', '.')
-        garpun_p = request.POST.get('garpun_p').replace(',', '.')
-        p_curve = request.POST.get('p_curve').replace(',', '.')
+        dealer = None
+        celling = None
+        try:
+            material_id = request.POST.get('material_id')
+            dealer_id = request.POST.get('dealer_id')
+            celling = Celling.objects.get(id=material_id)
+            dealer = Dealer.objects.get(id=dealer_id)
+        except Exception:
+            pass
+        celling_s = float(request.POST.get('celling_s').replace(',', '.'))
+        celling_p = float(request.POST.get('celling_p').replace(',', '.'))
+        garpun_p = float(request.POST.get('garpun_p').replace(',', '.'))
+        p_curve = float(request.POST.get('p_curve').replace(',', '.'))
         material_group_id = request.POST.get('material_group')
         material_group = MaterialGroup.objects.get(id=material_group_id)
-        material_long_m = request.POST.get('material_long_m').replace(',', '.')
-        order_model = Order(celling_id=material_id,
-                            dealer_id=dealer_id,
-                            dealer_obj=Dealer.objects.get(id=dealer_id),
+        s_material = float(request.POST.get('s_material').replace(',', '.'))
+        material_long_m = 0.0
+        if  bool(request.user.groups.filter(name__in='dealer')):
+            material_long_m = float(request.POST.get('material_long_m').replace(',', '.'))
+        balance_model = None
+        balance = 0.0
+        order_price = 0.0
+        celling_price = 0.0
+        if celling is not None:
+            balance = float(celling.celling_width * material_long_m - s_material)
+            celling_price = material_group.default_price * celling_s
+            order_price = celling_s * material_group.default_price
+        if dealer is not None:
+            dealer.dealer_amount -= order_price
+            dealer.save()
+            balance_model = Balance(dealer=dealer, count=balance)
+            balance_model.save()
+
+        order_model = Order(celling=celling,
+                            dealer_obj=dealer,
                             s_celling=celling_s,
                             p_celling=celling_p,
                             p_garpun=garpun_p,
                             p_curve=p_curve,
                             material_long=material_long_m,
-                            material_group=material_group
+                            material_group=material_group,
+                            celling_price=celling_price
                             )
         order_model.save()
         return HttpResponse('{"error":false,"Заказ добавлен"}')
@@ -284,7 +309,7 @@ def dealer_info(request):
     dealer_id = request.GET.get('dealer_id')
     if dealer_id is not None:
         dealer = Dealer.objects.get(id=dealer_id)
-        orders_tab = Order.objects.filter(dealer_id=dealer_id)
+        orders_tab = Order.objects.filter(dealer_obj=dealer)
         orders_res = list()
         for order in orders_tab:
             orders_res.append(order.to_json())
@@ -304,7 +329,8 @@ def get_orders(request):
     orders_res = list()
 
     if dealer_id is not None:
-        orders = Order.objects.filter(dealer_id=dealer_id)
+        dealer = Dealer.objects.get(user_id=dealer_id)
+        orders = Order.objects.filter(dealer_obj=dealer)
         for order in orders:
             orders_res.append(order.to_json())
     else:
@@ -342,6 +368,12 @@ def expense_page(request):
 
 
 @group_required('manager')
+def materials_json(request):
+    materials = Celling.objects.all()
+    materials_result = list()
+
+
+@group_required('manager')
 def materials_expense(request):
     materials = Celling.objects.all()
     materials_res = dict()
@@ -356,6 +388,7 @@ def materials_expense(request):
     orders_l = list(Order.objects.filter(order_status=3))
     for order in orders_l:
         materials_res[order.celling.id]['material_expense'] += order.material_long
+        materials_res[order.celling.id]['material_count'] -= order.material_long
     return HttpResponse(json.dumps({'data': list(materials_res.values())}), content_type='application/json')
 
 
@@ -406,3 +439,103 @@ def delete_dealer(request):
         return HttpResponse(dealer.save())
     else:
         return HttpResponse(dealer.delete())
+
+
+@group_required('manager')
+def add_material_api(request):
+    material_group_id = request.POST.get('material_group')
+    material_group = MaterialGroup.objects.get(id=material_group_id)
+    material_name = request.POST.get('celling_name')
+    material_width = request.POST.get('celling_width')
+    material_count = request.POST.get('material_count')
+    material_model = Celling(
+        material_group=material_group,
+        name=material_name,
+        celling_width=material_width,
+        count_meters_pagon=material_count
+    )
+    return HttpResponse(material_model.save())
+
+
+@group_required('manager')
+def finance_orders(request):
+    date_str = request.GET.get('date')
+    date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+    orders_res = Order.objects.filter(order_date__year=date.year, order_date__month=date.month,
+                                      order_date__day=date.day)
+    count_orders = orders_res.count()
+    orders_map = list()
+    sum_orders = 0.0
+    celling_s = 0.0
+    p_garpun = 0.0
+    for order in orders_res:
+        sum_orders += order.celling_price
+        celling_s += order.s_celling
+        p_garpun += order.p_garpun
+        orders_map.append(order.to_json())
+    return HttpResponse(json.dumps({
+        'count_orders': count_orders,
+        'sum_orders': sum_orders,
+        'p_garpun': p_garpun,
+        'celling_s': celling_s,
+        'orders': json.dumps(orders_map)
+    }))
+
+
+@group_required('manager')
+def add_color_api(request):
+    color_code = request.POST.get('color_name')
+    color_model = MaterialColor(name=color_code)
+    color_model.save()
+    return HttpResponse(json.dumps({'error': 'false'}))
+
+
+@group_required('manager')
+def add_material_group_api(request):
+    colors = request.POST.getlist('colors')
+    colors_res = MaterialColor.objects.filter(id__in=colors)
+    group_name = request.POST.get('material_group_name')
+    default_price = request.POST.get('default_price')
+    group_model = MaterialGroup(name=group_name, default_price=default_price)
+    group_model.save()
+    group_model.colors = colors_res
+
+    return HttpResponse(json.dumps(group_model.to_json()))
+
+
+@group_required('manager')
+def get_materials_json(request):
+    materials = list(Celling.objects.all())
+    materials_res = list(map(lambda material: material.to_json(), materials))
+    return HttpResponse(json.dumps({'data': materials_res}))
+
+
+@group_required('manager')
+def dealer_edit_api(request):
+    dealer_id = request.POST.get('dealer_id')
+    dealer_name = request.POST.get('dealer_name')
+    dealer_phone = request.POST.get('dealer_phone')
+    dealer_email = request.POST.get('dealer_email')
+    dealer_address = request.POST.get('dealer_address')
+    dealer_firm_name = request.POST.get('dealer_firm')
+    dealer_unp = request.POST.get('dealer_unp')
+    dealer_amount = request.POST.get('dealer_amount')
+    dealer_max_deposit = request.POST.get('dealer_max_depozit')
+    for_remove = request.POST.get('for_remove')
+    if for_remove == 'on':
+        for_remove = True
+    else:
+        for_remove = False
+    dealer_model = Dealer.objects.get(id=dealer_id)
+    dealer_model.id = dealer_id
+    dealer_model.dealer_name = dealer_name
+    dealer_model.dealer_phone = dealer_phone
+    dealer_model.dealer_email = dealer_email
+    dealer_model.dealer_address = dealer_address
+    dealer_model.dealer_firm_name = dealer_firm_name
+    dealer_model.dealer_unp = dealer_unp
+    dealer_model.dealer_amount = dealer_amount
+    dealer_model.max_deposit = dealer_max_deposit
+    dealer_model.for_remove = for_remove
+    dealer_model.save()
+    return HttpResponse(dealer_model)

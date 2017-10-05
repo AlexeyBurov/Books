@@ -11,9 +11,9 @@
         <label>Название группы</label>
         <input name="material_group_name" class="form-control" type="text" placeholder="Название">
         <label>Базовая цена</label>
-        <input name="default_price" class="form-control" type="number" placeholder="Базовая цена">
+        <input name="default_price" class="form-control" type="text" placeholder="Базовая цена">
         <label>Доступные цвета</label>
-        <select class="form-control" name="colors" multiple>
+        <select class="form-control" name="colors" multiple="multiple">
             {% for color in colors %}
                 <option value="{{ color.id }}">{{ color.name }}</option>
             {% endfor %}

@@ -66,25 +66,25 @@
                 </button>
               </div>
               <div class="modal-body">
-                  <input name="dealer_id" id="payment_dealer_id" type="hidden">
+                  <input name="dealer_id" id="edit_dealer_id" type="hidden">
                   <label>Имя</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_name" type="text" class="form-control">
                   <label>Телефон</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_phone" type="text" class="form-control">
                   <label>Email</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_email" type="text" class="form-control">
                   <label>Адресс</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_address" type="text" class="form-control">
                   <label>Фирма</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_firm" type="text" class="form-control">
                   <label>УНП</label>
-                  <input name="payment_sum" type="text" class="form-control">
+                  <input name="dealer_unp" type="text" class="form-control">
                   <label>Счёт</label>
-                  <input name="payment_sum" type="number" class="form-control">
+                  <input name="dealer_amount" type="number" class="form-control">
                   <label>Депозит</label>
-                  <input name="payment_sum" type="number" class="form-control">
+                  <input name="dealer_max_depozit" type="number" class="form-control">
                   <label>Удаление</label>
-                  <input type="checkbox" class="form-control" checked>
+                  <input type="checkbox" name="for_remove" class="form-control">
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
@@ -108,54 +108,33 @@
               <div class="row">
                   <div class="container-fluid" style="padding-bottom: 50px;margin-left: 70px">
                       <div class="col-sm-12">
-                          <p class="info-text"><label>№: </label><label class="pull-right" id="view_dialer_id"></label></p>
+                          <p class="info-text">№: <label class="pull-right" id="view_dialer_id"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Имя: </label><label class="pull-right" id="view_dialer_name"></label></p>
+                          <p class="info-text">Имя: <label class="pull-right" id="view_dialer_name"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Телефон: </label><label class="pull-right" id="view_dialer_phone"></label></p>
+                          <p class="info-text">Телефон: <label class="pull-right" id="view_dialer_phone"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Email: </label><label class="pull-right" id="view_dialer_email"></label></p>
+                          <p class="info-text">Email: <label class="pull-right" id="view_dialer_email"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Фирма: </label><label class="pull-right" id="view_dialer_firm"></label></p>
+                          <p class="info-text">Фирма: <label class="pull-right" id="view_dialer_firm"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Адресс: </label><label class="pull-right" id="view_dialer_address"></label></p>
+                          <p class="info-text">Адресс: <label class="pull-right" id="view_dialer_address"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>УНП: </label><label class="pull-right" id="view_dialer_unp"></label></p>
+                          <p class="info-text">УНП: <label class="pull-right" id="view_dialer_unp"></label></p>
                       </div>
                       <div class="col-sm-12">
-                          <p class="info-text"><label>Счёт: </label><label class="pull-right"  id="view_dialer_amount"></label></p>
+                          <p class="info-text">Счёт: <label class="pull-right"  id="view_dialer_amount"></label></p>
                       </div>
                   </div>
                   <div class="col-sm-1"></div>
-                  <div class="col-sm-10">
-                      <table id="dealers-orders-table">
-                        <thead>
-                            <td>id</td>
-                            <td>№ матреиала</td>
-                            <td>Площадь потолка</td>
-                            <td>Периметр потолка</td>
-                            <td>Периметр гарпуна</td>
-                            <td>Периметр кривых</td>
-                            <td>Статус заказа</td>
-                            <td>Стоймость</td>
-                        </thead>
-                        <tfoot>
-                            <td>id</td>
-                            <td>№ матреиала</td>
-                            <td>Площадь потолка</td>
-                            <td>Периметр потолка</td>
-                            <td>Периметр гарпуна</td>
-                            <td>Периметр кривых</td>
-                            <td>Статус заказа</td>
-                            <td>Стоймость</td>
-                        </tfoot>
-                    </table>
+                  <div class="col-sm-10" id="for_dealers_orders">
+
                   </div>
                   <div class="col-sm-1"></div>
               </div>
