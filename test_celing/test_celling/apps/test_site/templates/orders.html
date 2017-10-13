@@ -18,6 +18,7 @@
             <td>Периметр кривых</td>
             <td>Статус заказа</td>
             <td>Стоймость</td>
+            <td>Действия</td>
         </thead>
         <tfoot>
             <td>id</td>
@@ -31,8 +32,75 @@
             <td>Периметр кривых</td>
             <td>Статус заказа</td>
             <td>Стоймость</td>
+            <td>Действия</td>
         </tfoot>
     </table>
+    <div class="modal fade bd-example-modal-sm" id="order_edit_tmpl" tabindex="-1" role="dialog" aria-labelledby="order_editModalLabel" aria-hidden="true">
+      <div class="modal-dialog " role="document">
+        <form method="POST" action="edit_order" class="form-group">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="order_editModalLabel">Редактирование группы материалов</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+
+            {% csrf_token %}
+                <input type="hidden" name="material_id" >
+                <input type="hidden" id="order_dealer_id" name='dealer_id' value="{{ dealer.id }}">
+                <label>Материал</label>
+                <select class="form-control" id="material_group" name="material_group">\
+                    {% for material_group in material_group %}
+                        <option value="{{ material_group.id }}">{{ material_group.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if not user.groups.all.0.name == "dealer" %}
+                <label>Дилер</label>
+                <select class="form-control required" id="dealer_select">
+                    <option>Выберите дилера</option>
+                    {% for dealer in dealers %}
+                        <option value="{{ dealer.id }}">{{ dealer.dealer_firm_name }}</option>
+                    {% endfor %}
+                </select>
+                <label>Полотно</label>
+                <select class="form-control" id="material_select">
+                    <option>Выберите материал</option>
+                </select>
+                <label>Длина материала рулон</label>
+                <input name="material_long_m" class="form-control" type="text" value="0.0" placeholder="Длинна материала метр погонный">
+                {% endif %}
+                <label>Цвет</label>
+                <select class="form-control" id="material_color" name="material_color"></select>
+                <label>Площадь потолка</label>
+                <input name="celling_s" class="form-control" value="{{ order.s_celling }}" type="text" placeholder="Площадь потолка">
+                <label>Пеиметр потолка</label>
+                <input name="celling_p" value="{{ order.p_celling }}" class="form-control" type="text" placeholder="Периметр потолка">
+                <label>Периметр гарпуна</label>
+                <input name="garpun_p" value="{{ order.p_garpun }}" class="form-control" type="text" placeholder="Периметр гарпуна">
+                <label>Периметр кривых</label>
+                <input name="p_curve" value="{{ order.p_curve }}" class="form-control" type="text" placeholder="Периметр кривых">
+                <label>Площадь полотна</label>
+                <input name="s_material" class="form-control" placeholder="Площадь потолка" value=0,0 type="text">
+              <div class="modal-footer">
+                {% if not user.groups.all.0.name == "dealer" %}
+                <select class="form-control pull-left" style="width: 20%;">
+                    <option value="1">Принят</option>
+                    <option value="2">Обработан</option>
+                    <option value="3">Готов</option>
+                    <option value="4">Оплачен</option>
+                    <option value="5">Закончен</option>
+                </select>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <input type="submit" class="btn btn-primary" value="Сохранить" style="margin-top: 0">
+              </div>
+            </div>
+            </div>
+        </form>
+      </div>
+    </div>
 {% endblock %}
 
 {% block custom_script %}
@@ -86,7 +154,13 @@
                     "data": 'order_status'
                 }, {
                     "data": 'celling_price'
-                }]
+                } {% if not user.groups.all.0.name == "dealer" %},{
+                    "data": function ( row, type, val, meta ) {
+                        return "<button class='btn btn-sm btn-success order-view' data-num="+row.id+" data-toogle='modal' data-target='#view-dealer-tmpl'><span class='glyphicon glyphicon-duplicate' style='padding:0px;'></span></button>"+
+                                "<button class='btn btn-sm btn-warning order-edit' data-num="+row.id+"><span class='glyphicon glyphicon-pencil' style='padding:0px;'></span></button>"+
+                                "<button class='btn btn-sm btn-danger order-delete' data-num="+row.id+"><span class='glyphicon glyphicon-remove' style='padding:0px;'></span></button>"
+                    }
+                }{% endif %}]
             });
         });
     </script>

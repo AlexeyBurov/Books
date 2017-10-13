@@ -8,9 +8,10 @@ from django.db import models
 class MaterialColor(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
+    for_remove = models.BooleanField(default=False)
 
     def to_json(self):
-        return dict(id=self.id, name=self.name)
+        return dict(id=self.id, name=self.name, for_remove = self.for_remove)
 
 
 class MaterialGroup(models.Model):
@@ -28,7 +29,7 @@ class Celling(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     celling_width = models.IntegerField()
-    price = models.BigIntegerField(default=0)
+    price = models.FloatField(default=0.0)
     material_group = models.ForeignKey(MaterialGroup)
     for_remove = models.BooleanField(null=False, default=False)
     count_meters_pagon = models.FloatField(null=False, default=0.0)
@@ -140,14 +141,14 @@ class Payment(models.Model):
 
 class MaterialDealerPrice(models.Model):
     id = models.AutoField(primary_key=True)
-    dealer_id = models.BigIntegerField(null=False)
-    material_id = models.BigIntegerField(null=False)
+    dealer = models.ForeignKey('Dealer', null=False)
+    material = models.ForeignKey('MaterialGroup', null=False)
     discount = models.FloatField(null=True, default=0.0)
 
     def to_json(self):
         return dict(id=self.id,
-                    dealer_id=self.dealer_id,
-                    material_id=self.material_id,
+                    dealer=self.dealer.to_json(),
+                    material=self.material.to_json(),
                     discount=self.discount)
 
 

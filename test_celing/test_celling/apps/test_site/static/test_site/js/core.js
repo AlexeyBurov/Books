@@ -45,6 +45,8 @@ $(document).on('submit', 'form[action="add_order"]',function () {
             url: 'add_order',
             data: data,
             success: function (data) {
+                console.log(data);
+                alert(data);
                 window.location.href = './orders'
             }
         });
@@ -194,6 +196,8 @@ $(document).on('click','.dealer-edit', function(){
                  $('input[name="for_remove"]').removeAttr('checked');
             }
             $('#edit_dealer_id').val(dealer_info.id);
+            $('#dealer_add_discount').data('num',dealer_info.id);
+            $('#view_add_discount').data('num', dealer_info.id);
             $('input[name="dealer_name"]').val(dealer_info.dealer_name);
             $('input[name="dealer_phone"]').val(dealer_info.dealer_phone);
             $('input[name="dealer_email"]').val(dealer_info.dealer_email);
@@ -207,6 +211,66 @@ $(document).on('click','.dealer-edit', function(){
     });
 });
 
+$(document).on('click','.dealer-discount', function () {
+    let dealer_id = $(this).data('num');
+    $('#add_discount-tmpl').modal('show');
+    $('#discount_dealer_id').val(dealer_id);
+    return false;
+});
+
+$(document).on('submit', 'form[action="add_discount"]', function () {
+    let data = $(this).serialize();
+    $.ajax({
+        url: 'add_discount',
+        type: 'post',
+        data: data,
+        success: function(data){
+            $('#add_discount-tmpl').modal('hide');
+        }
+
+    });
+    return false;
+});
+
+$(document).on('click','.dealer-discounts', function () {
+    let dealer_id = $(this).data('num');
+    let discount_view = $('#discount_view');
+    $.ajax({
+       url:'get_discounts_for_dealer',
+       data:{dealer_id:dealer_id},
+       success: function (data) {
+           let discounts = JSON.parse(data);
+           let discount_view = $('#discount_view');
+           discount_view.html('');
+           for (let discount of discounts){
+               discount_view.append(
+                $('<form class="discount" action="edit_discount" style="width:100%; display: -webkit-inline-box;margin-top:5px;margin-bottom: 5px"></form>').
+                    append($('<input type="hidden" name="csrfmiddlewaretoken">').val($('input[name="csrfmiddlewaretoken"]').val())).
+                    append('<input name="discount_id" type="hidden" value="'+discount.id+'">').
+                        append('<label style="margin-right:15px;margin-bottom:0;margin-top:5px;vertical-align: middle" for="discount_price">'+discount.material.name+'</label>').
+                            append('<input class="form-control" name="discount_price" id="discount_price" value="'+discount.discount+'" style="width:70%;clear: both">')
+                                .append('<p style="margin-left:10px"><button type="submit" class="btn btn-success btn-xs discount" style="display: inline-block"><span class="glyphicon glyphicon-plus"></span></button></p>'));
+           }
+           $('#discounts-tmpl').modal('show');
+
+       }
+    });
+
+    return false;
+});
+
+$(document).on('click','.discount',function(){
+    let data = $(this).parent().parent().serialize();
+    $.ajax({
+        url: 'edit_discount',
+        type: 'post',
+        data: data,
+        success: function (data){
+            console.log(data);
+        }
+    });
+    return false;
+});
 
 $(document).on('click', '.dealer-view',function () {
     let dealer_id = $(this).data('num');
@@ -302,4 +366,145 @@ $(document).on('submit','form[action="dealer_edit"]', function(){
         }
     });
     return false;
+});
+
+$(document).on('click', '.color-delete', function () {
+    let data = $(this).data('num');
+    $.ajax({
+       url: 'delete_color',
+       type: 'post',
+       data: {'color_id': data, csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()},
+        success: function(result){
+            $('#colors-table').DataTable().ajax.reload();
+        }
+
+    });
+});
+
+$(document).on('click', '.group-delete', function () {
+    let material_group = $(this).data('num');
+    $.ajax({
+        url: 'delete_material_group',
+        type: 'post',
+        data: {'material_group': material_group, csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()},
+        success: function (result){
+            $('#materials_group_table').DataTable().ajax.reload();
+        }
+    });
+
+});
+$(document).on('click', '.group-edit', function () {
+    let material_group = $(this).data('num');
+    $.ajax({
+        url: 'material_group_info',
+        type: 'get',
+        data: {material_group_id:material_group},
+        success: function(result){
+            let data = JSON.parse(result);
+            let colors = JSON.parse(data.material_group.colors);
+            let selected_colors = colors.map(function(val){
+                return val.pk.toString();
+            });
+            $('#edit_material_group_id').val(data.material_group.id);
+            $('input[name="material_group_name"]').val(data.material_group.name);
+            $('input[name="default_price"]').val(data.material_group.default_price);
+
+
+            $('#materials_group_edit_tmpl').modal('show');
+            $('select[name="colors"]').val(selected_colors);
+        }
+    })
+});
+
+
+$(document).on('click', '.material-delete', function(){
+    let material_id = $(this).data('num');
+    $.ajax({
+        url: 'delete_material',
+        type: 'post',
+        data: {'material_id': material_id, csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()},
+        success: function (result){
+            $('#materials_table').DataTable().ajax.reload();
+        }
+    });
+    return false;
+});
+
+$(document).on('click', '.material-edit', function(){
+    let material_id = $(this).data('num');
+    $.ajax({
+        url: 'get_material_json',
+        data: {material_id:material_id},
+        success: function(result){
+            let data = JSON.parse(result);
+            $('#edit_material_id').val(data.id);
+            $('input[name="material_name"]').val(data.name);
+            $('input[name="celling_width"]').val(data.celling_width);
+            $('input[name="material_price"]').val(data.price);
+            $('input[name="count_meters_pagon"]').val(data.count_meters_pagon);
+            $('select[name="material_group"]').val(data.material_group.id);
+            $('#materials_edit_tmpl').modal('show');
+        }
+    });
+
+    return false;
+});
+
+$(document).on('submit', 'form[action="edit_material"]', function(){
+    let data = $(this).serialize();
+    $.ajax({
+        url: 'edit_material',
+        type: 'post',
+        data: data,
+        success: function(result){
+            $('#materials_edit_tmpl').modal('hide');
+            $('#materials_table').DataTable().ajax.reload();
+        }
+    });
+    return false;
+});
+
+$(document).on('submit', 'form[action="edit_material_group"]', function(){
+    let data = $(this).serialize();
+    $.ajax({
+        url: 'edit_material_group',
+        type: 'post',
+        data: data,
+        success: function(result){
+            $('#materials_group_table').DataTable().ajax.reload();
+            $('#materials_group_edit_tmpl').modal('hide');
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click', '.order-delete', function(){
+    let order_id = $(this).data('num');
+    $.ajax({
+        url: 'delete_order',
+        type: 'post',
+        data: {order_id: order_id, csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()},
+        success: function(result){
+            console.log(result);
+
+            $('#orders-table').DataTable().ajax.reload();
+        }
+    });
+    return false;
+});
+
+$(document).on('click', '.order-edit', function(){
+   let order_id = $(this).data('num');
+   $.ajax({
+       url: 'order_info',
+       data: {order_id: order_id},
+       success: function(result){
+           let data = JSON.parse(result);
+           $('#material_group').val()
+           $('#order_edit_tmpl').modal('show');
+           console.log(data);
+       }
+   });
+
 });

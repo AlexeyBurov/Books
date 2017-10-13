@@ -40,6 +40,18 @@ urlpatterns = [
     url(r'^add_material_api$', views.add_material_api),
     url(r'^finance_orders_json$', views.finance_orders),
     url(r'^get_materials_json$', views.get_materials_json),
-    url(r'^dealer_edit_api$', views.dealer_edit_api)
+    url(r'^dealer_edit_api$', views.dealer_edit_api),
+    url(r'^get_discounts_for_dealer$', views.get_discounts_for_dealer),
+    url(r'^edit_discount$', views.edit_discount),
+    url(r'^add_discount$', views.add_discount),
+    url(r'^delete_color$', views.delete_color),
+    url(r'^delete_material_group$', views.delete_material_group),
+    url(r'^material_group_info$', views.material_group_info),
+    url(r'^delete_material$', views.delete_material),
+    url(r'^edit_material_group$', views.edit_material_group),
+    url(r'^get_material_json$', views.get_material_json),
+    url(r'^edit_material$', views.edit_material),
+    url(r'^delete_order$', views.delete_order),
+    url(r'^order_info$', views.order_info)
 ]
 

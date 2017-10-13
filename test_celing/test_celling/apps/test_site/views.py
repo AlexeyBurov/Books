@@ -30,10 +30,7 @@ def group_required(*group_names):
 @group_required('manager', 'dealer')
 def index(request):
     if request.user.is_authenticated:
-
-        context = {
-
-        }
+        context = {}
         return render(request, 'index.html', context=context)
     else:
         return HttpResponseRedirect("./login")
@@ -42,7 +39,10 @@ def index(request):
 @group_required('manager', 'dealer')
 def orders(request):
     if request.user.is_authenticated:
-        context = {}
+        context = {
+            'material_group': MaterialGroup.objects.all(),
+            'dealers': Dealer.objects.all()
+        }
         return render(request, 'orders.html', context=context)
     else:
         return HttpResponseRedirect('./login')
@@ -51,7 +51,7 @@ def orders(request):
 @group_required('manager')
 def dealers(request):
     if request.user.is_authenticated:
-        context = {}
+        context = {'material_groups': MaterialGroup.objects.all()}
         return render(request, 'dealers.html', context=context)
     else:
         return HttpResponseRedirect('./login')
@@ -75,6 +75,18 @@ def settings(request):
         return HttpResponseRedirect('./login')
 
 
+@group_required('manager')
+def get_discounts_for_dealer(request):
+    dealer_id = request.GET.get('dealer_id')
+    dealer = Dealer.objects.get(id=dealer_id)
+    dealer_discounts = MaterialDealerPrice.objects.filter(dealer=dealer)
+    discounts = list()
+    for discount in dealer_discounts:
+        discounts.append(discount.to_json())
+    return HttpResponse(json.dumps(discounts))
+
+
+@group_required('manager', 'dealer')
 def file_upload_template(request):
     if request.user.is_authenticated:
         context = {}
@@ -130,8 +142,12 @@ def add_celling_material(request):
         celling_name = request.POST.get('celling_name')
         celling_count = request.POST.get('material_count')
         celling_width = request.POST.get('celling_width')
-        celling_model = Celling(name=celling_name, material_group=material_group, celling_width=celling_width,
-                                count_meters_pagon=celling_count)
+        celling_model = Celling(
+            name=celling_name,
+            material_group=material_group,
+            celling_width=celling_width,
+            count_meters_pagon=celling_count
+        )
         result = celling_model.save()
         return HttpResponse(result)
     else:
@@ -178,12 +194,12 @@ def save_file(request):
 
 @group_required('manager')
 def materials_list_tmpl(request):
-    return render(request, 'materials_list.html', context={})
+    return render(request, 'materials_list.html', context={'material_groups': MaterialGroup.objects.all()})
 
 
 @group_required('manager')
 def materials_group_tmpl(request):
-    return render(request, 'materials_group.html', context={})
+    return render(request, 'materials_group.html', context={'colors': MaterialColor.objects.all()})
 
 
 @group_required('manager')
@@ -204,8 +220,8 @@ def add_order(request):
         try:
             material_id = request.POST.get('material_id')
             dealer_id = request.POST.get('dealer_id')
-            celling = Celling.objects.get(id=material_id)
             dealer = Dealer.objects.get(id=dealer_id)
+            celling = Celling.objects.get(id=material_id)
         except Exception:
             pass
         celling_s = float(request.POST.get('celling_s').replace(',', '.'))
@@ -216,15 +232,21 @@ def add_order(request):
         material_group = MaterialGroup.objects.get(id=material_group_id)
         s_material = float(request.POST.get('s_material').replace(',', '.'))
         material_long_m = 0.0
-        if  bool(request.user.groups.filter(name__in='dealer')):
+        if bool(request.user.groups.filter(name__in='dealer')):
             material_long_m = float(request.POST.get('material_long_m').replace(',', '.'))
         balance_model = None
         balance = 0.0
         order_price = 0.0
         celling_price = 0.0
+        discount = 0.0
+        try:
+            discount_model = MaterialDealerPrice.objects.get(dealer=dealer, material=material_group)
+            discount = discount_model.discount
+        except:
+            discount = 0.0
         if celling is not None:
             balance = float(celling.celling_width * material_long_m - s_material)
-            celling_price = material_group.default_price * celling_s
+            celling_price = (material_group.default_price - discount) * celling_s
             order_price = celling_s * material_group.default_price
         if dealer is not None:
             dealer.dealer_amount -= order_price
@@ -243,7 +265,8 @@ def add_order(request):
                             celling_price=celling_price
                             )
         order_model.save()
-        return HttpResponse('{"error":false,"Заказ добавлен"}')
+        return HttpResponse('{"error":false,"Заказ добавлен","celling_price":'+str(celling_price)+
+                            ',"celing_price_with_discount:'+str(celling_price-discount)+'"}')
 
     else:
         return HttpResponse(status=405)
@@ -262,17 +285,11 @@ def get_dealers(request):
 
 class LoginFormView(FormView):
     form_class = AuthenticationForm
-
-    # Аналогично регистрации, только используем шаблон аутентификации.
     template_name = "login.html"
-
-    # В случае успеха перенаправим на главную.
     success_url = "/"
 
     def form_valid(self, form):
-        # Получаем объект пользователя на основе введённых в форму данных.
         self.user = form.get_user()
-
         # Выполняем аутентификацию пользователя.
         login(self.request, self.user)
         return super(LoginFormView, self).form_valid(form)
@@ -280,22 +297,14 @@ class LoginFormView(FormView):
 
 class RegisterFormView(FormView):
     form_class = UserCreationForm
-
-    # Ссылка, на которую будет перенаправляться пользователь в случае успешной регистрации.
-    # В данном случае указана ссылка на страницу входа для зарегистрированных пользователей.
     success_url = "/login/"
-
-    # Шаблон, который будет использоваться при отображении представления.
     template_name = "register.html"
 
     def form_valid(self, form):
-        # Создаём пользователя, если данные в форму были введены корректно.
         user = form.save()
         group = Group.objects.get(name='manager')
         group.user_set.add(user)
         user.groups.add(group)
-
-        # Вызываем метод базового класса
         return super(RegisterFormView, self).form_valid(form)
 
 
@@ -368,12 +377,6 @@ def expense_page(request):
 
 
 @group_required('manager')
-def materials_json(request):
-    materials = Celling.objects.all()
-    materials_result = list()
-
-
-@group_required('manager')
 def materials_expense(request):
     materials = Celling.objects.all()
     materials_res = dict()
@@ -406,13 +409,6 @@ def add_material_group_tmpl(request):
 
 
 @group_required('manager')
-def add_material_api(request):
-    name = request.POST.get('color_name')
-    material_color = MaterialColor(name=name)
-    return HttpResponse(material_color.save())
-
-
-@group_required('manager')
 def get_colors_table(request):
     colors_set = MaterialColor.objects.all()
     colors = list()
@@ -438,6 +434,8 @@ def delete_dealer(request):
         dealer.for_remove = True
         return HttpResponse(dealer.save())
     else:
+        user = User.objects.get(id=dealer.user_id)
+        user.delete()
         return HttpResponse(dealer.delete())
 
 
@@ -448,11 +446,13 @@ def add_material_api(request):
     material_name = request.POST.get('celling_name')
     material_width = request.POST.get('celling_width')
     material_count = request.POST.get('material_count')
+    material_price = float(request.POST.get('material_price').replace(',', '.'))
     material_model = Celling(
         material_group=material_group,
         name=material_name,
         celling_width=material_width,
-        count_meters_pagon=material_count
+        count_meters_pagon=material_count,
+        price=material_price
     )
     return HttpResponse(material_model.save())
 
@@ -511,6 +511,13 @@ def get_materials_json(request):
 
 
 @group_required('manager')
+def get_material_json(request):
+    material_id = request.GET.get('material_id')
+    material_model = Celling.objects.get(id=material_id)
+    return HttpResponse(json.dumps(material_model.to_json()))
+
+
+@group_required('manager')
 def dealer_edit_api(request):
     dealer_id = request.POST.get('dealer_id')
     dealer_name = request.POST.get('dealer_name')
@@ -539,3 +546,116 @@ def dealer_edit_api(request):
     dealer_model.for_remove = for_remove
     dealer_model.save()
     return HttpResponse(dealer_model)
+
+
+@group_required('manager')
+def edit_discount(request):
+    discount_id = request.POST.get('discount_id')
+    discount_price = request.POST.get('discount_price')
+    discount_model = MaterialDealerPrice.objects.get(id=discount_id)
+    discount_model.discount = discount_price
+    discount_model.save()
+    return HttpResponse(json.dumps(discount_model.to_json()))
+
+
+@group_required('manager')
+def add_discount(request):
+    dealer_id = request.POST.get('dealer_id')
+    material_id = request.POST.get('material_group_id')
+    discount = request.POST.get('payment_sum')
+    material = MaterialGroup.objects.get(id=material_id)
+    dealer = Dealer.objects.get(id=dealer_id)
+    material_dealer_price = MaterialDealerPrice(dealer=dealer, material=material, discount=discount)
+    material_dealer_price.save()
+    return HttpResponse(json.dumps(material_dealer_price.to_json()))
+
+
+@group_required('manager')
+def delete_color(request):
+    color_id = request.POST.get('color_id')
+    color_model = MaterialColor.objects.get(id=color_id)
+    if request.user.groups.filter(name='manager').exists():
+        color_model.for_remove = True
+        return HttpResponse(color_model.save())
+    else:
+        color_model.delete()
+    return HttpResponse(json.dumps(color_model.to_json()))
+
+
+@group_required('manager')
+def delete_material_group(request):
+    material_group_id = request.POST.get('material_group')
+    material_group_model = MaterialGroup.objects.get(id=material_group_id)
+    material_group_model.colors = list()
+    material_group_model.delete()
+    return HttpResponse(material_group_model.to_json())
+
+
+@group_required('manager')
+def material_group_info(request):
+    material_group_id = request.GET.get('material_group_id')
+    material_group_model = MaterialGroup.objects.get(id=material_group_id)
+    return HttpResponse(json.dumps(material_group_model.to_json()))
+
+
+@group_required('manager')
+def delete_material(request):
+    material_id = request.POST.get('material_id')
+    material_model = Celling.objects.get(id=material_id)
+    if request.user.groups.filter(name='manager').exists():
+        material_model.for_remove = True
+        return HttpResponse(material_model.save())
+    else:
+        material_model.delete()
+    return HttpResponse(json.dumps(material_model.to_json()))
+
+
+@group_required('manager')
+def edit_material_group(request):
+    material_group_id = request.POST.get('material_group_id')
+    material_group_name = request.POST.get('material_group_name')
+    default_price = request.POST.get('default_price')
+    colors_req = request.POST.getlist('colors')
+    colors = MaterialColor.objects.filter(id__in=colors_req)
+    material_group_model = MaterialGroup.objects.get(id=material_group_id)
+    material_group_model.name = material_group_name
+    material_group_model.default_price = default_price
+    material_group_model.for_remove = False
+    material_group_model.colors = colors
+    material_group_model.save()
+    return HttpResponse(json.dumps(material_group_model.to_json()))
+
+
+@group_required('manager')
+def edit_material(request):
+    material_id = request.POST.get('material_id')
+    material_name = request.POST.get('material_name')
+    celling_width = request.POST.get('celling_width')
+    material_price = request.POST.get('material_price')
+    material_group_id = request.POST.get('material_group')
+    count_material = request.POST.get('count_meters_pagon')
+    material_model = Celling.objects.get(id=material_id)
+    material_group_model = MaterialGroup.objects.get(id=material_group_id)
+    material_model.name = material_name
+    material_model.celling_width = celling_width
+    material_model.price = material_price
+    material_model.material_group = material_group_model
+    material_model.for_remove = False
+    material_model.count_meters_pagon = count_material
+    material_model.save()
+    return HttpResponse(json.dumps(material_model.to_json()))
+
+
+@group_required('manager')
+def delete_order(request):
+    order_id = request.POST.get('order_id')
+    order_model = Order.objects.get(id=order_id)
+    order_model.delete()
+    return HttpResponse(json.dumps(order_model.to_json()))
+
+
+@group_required('manager')
+def order_info(request):
+    order_id = request.GET.get('order_id')
+    order_model = Order.objects.get(id=order_id)
+    return HttpResponse(json.dumps(order_model.to_json()))

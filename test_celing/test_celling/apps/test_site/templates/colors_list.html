@@ -13,16 +13,17 @@
                 <thead>
                     <td>id</td>
                     <td>Код</td>
+                    <td>Действия</td>
                 </thead>
                 <tfoot>
                     <td>id</td>
                     <td>Код</td>
+                    <td>Действия</td>
                 </tfoot>
             </table>
         </div>
         <div class="col-sm-3"></div>
         </div>
-
   </div>
 
 {% endblock %}
@@ -53,6 +54,10 @@
                     "data": 'id'
                 }, {
                     "data": 'name'
+                },{
+                    'data' : function ( row, type, val, meta ) {
+                        return "<button class='btn btn-sm btn-danger color-delete' data-num="+row.id+"><span class='glyphicon glyphicon-remove' style='padding:0px;'></span></button>"
+                    }
                 }]
             });
         });
