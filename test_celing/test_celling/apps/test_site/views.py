@@ -1,5 +1,7 @@
 import datetime
 import json
+import os
+import random
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import user_passes_test
@@ -8,6 +10,7 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import FormView
+from django.conf import settings as settings_file
 
 from test_celling.apps.test_site.models import Celling, MaterialDealerPrice, Payment, MaterialGroup, MaterialColor, \
     Balance
@@ -158,8 +161,14 @@ def add_celling_material(request):
 def save_file(request):
     file_content = ''
     content = {}
-    for chunk in request.FILES['file'].chunks():
-        file_content += chunk.decode('utf-16')
+    hash_str = random.getrandbits(128)
+    chunks = request.FILES['file'].chunks()
+    while os.path.exists(settings_file.MEDIA_ROOT+str(hash_str)+'.ec'):
+        hash_str = random.getrandbits(128)
+    f = open(settings_file.MEDIA_ROOT+str(hash_str)+'.ec', 'wb')
+    for chunk in chunks:
+        f.write(chunk)
+        file_content += chunk.decode('utf-16', 'ignore')
     lines = file_content.split('\n')
     list_length = len(lines)
     s_celling = float(lines[list_length - 7])
@@ -188,6 +197,8 @@ def save_file(request):
         content['discount'] = MaterialDealerPrice.objects.filter(dealer_id=dealer.id)
     content['dealers'] = dealers_list
     content['dialer'] = Dealer(dealer_name=client_name, dealer_address=client_address, dealer_phone=client_phone)
+    content['path_to_file'] = os.path.basename(f.name)
+    f.close()
 
     return render(request, 'add_order_template.html', context=content)
 
@@ -224,6 +235,7 @@ def add_order(request):
             celling = Celling.objects.get(id=material_id)
         except Exception:
             pass
+        material_color = MaterialColor.objects.get(id=request.POST.get('material_color'))
         celling_s = float(request.POST.get('celling_s').replace(',', '.'))
         celling_p = float(request.POST.get('celling_p').replace(',', '.'))
         garpun_p = float(request.POST.get('garpun_p').replace(',', '.'))
@@ -232,6 +244,7 @@ def add_order(request):
         material_group = MaterialGroup.objects.get(id=material_group_id)
         s_material = float(request.POST.get('s_material').replace(',', '.'))
         material_long_m = 0.0
+        path_to_file = request.POST.get('path_to_file')
         if bool(request.user.groups.filter(name__in='dealer')):
             material_long_m = float(request.POST.get('material_long_m').replace(',', '.'))
         balance_model = None
@@ -262,7 +275,10 @@ def add_order(request):
                             p_curve=p_curve,
                             material_long=material_long_m,
                             material_group=material_group,
-                            celling_price=celling_price
+                            celling_price=celling_price,
+                            color_model=material_color,
+                            file_name=path_to_file,
+                            for_remove=False
                             )
         order_model.save()
         return HttpResponse('{"error":false,"Заказ добавлен","celling_price":'+str(celling_price)+
@@ -658,4 +674,50 @@ def delete_order(request):
 def order_info(request):
     order_id = request.GET.get('order_id')
     order_model = Order.objects.get(id=order_id)
+    result = order_model.to_json()
+    discount = 0.0
+    try:
+        discount = MaterialDealerPrice.objects.filter(dealer=order_model.dealer).get(material=order_model.material_group).discount
+    except Exception:
+        pass
+    result['discount'] = discount
+    return HttpResponse(json.dumps(result))
+
+
+@group_required('manager')
+def edit_order(request):
+    order_id = request.POST.get('order_id')
+    material_id = request.POST.get('material_id')
+    dealer_id = request.POST.get('dealer_id')
+    material_group_id = request.POST.get('material_group')
+    material_group = MaterialGroup.objects.get(id=material_group_id)
+    material_color_id = request.POST.get('material_color')
+    material_color = MaterialColor.objects.get(id=material_color_id)
+    material_long_m = float(request.POST.get('material_long_m').replace(',', '.'))
+    celling_s = float(request.POST.get('celling_s').replace(',', '.'))
+    celling_p = float(request.POST.get('celling_p').replace(',', '.'))
+    garpun_p = float(request.POST.get('garpun_p').replace(',', '.'))
+    p_curve = float(request.POST.get('p_curve').replace(',', '.'))
+    s_material = float(request.POST.get('s_material').replace(',', '.'))
+    order_status = request.POST.get('order_status')
+    order_model = Order.objects.get(id=order_id)
+    order_model.material_long = material_long_m
+    order_model.s_celling = celling_s
+    order_model.p_celling = celling_p
+    order_model.p_garpun = garpun_p
+    order_model.p_curve = p_curve
+    order_model.s_material = s_material
+    order_model.order_status = order_status
+    order_model.color_model = material_color
+    order_model.material_group = material_group
+    material = None
+    dealer = None
+    try:
+        dealer = Dealer.objects.get(id=dealer_id)
+        material = Celling.objects.get(id=material_id)
+    except Exception:
+        pass
+    order_model.dealer_obj = dealer
+    order_model.celling = material
+    order_model.save()
     return HttpResponse(json.dumps(order_model.to_json()))

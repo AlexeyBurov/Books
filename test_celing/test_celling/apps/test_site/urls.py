@@ -1,7 +1,9 @@
 import django
 from django.conf.urls import url
 from django.contrib import admin
+from django.views.static import serve
 
+from test_celling import settings
 from . import views
 
 urlpatterns = [
@@ -52,6 +54,13 @@ urlpatterns = [
     url(r'^get_material_json$', views.get_material_json),
     url(r'^edit_material$', views.edit_material),
     url(r'^delete_order$', views.delete_order),
-    url(r'^order_info$', views.order_info)
+    url(r'^order_info$', views.order_info),
+    url(r'^edit_order$', views.edit_order)
 ]
 
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^media/(?P<path>.*)$', serve, {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+    ]

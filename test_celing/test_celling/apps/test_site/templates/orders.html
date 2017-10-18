@@ -40,7 +40,7 @@
         <form method="POST" action="edit_order" class="form-group">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="order_editModalLabel">Редактирование группы материалов</h5>
+                <h5 class="modal-title" id="order_editModalLabel">Редактирование заказа</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                 </button>
@@ -48,6 +48,7 @@
               <div class="modal-body">
 
             {% csrf_token %}
+                <input type="hidden" name="order_id">
                 <input type="hidden" name="material_id" >
                 <input type="hidden" id="order_dealer_id" name='dealer_id' value="{{ dealer.id }}">
                 <label>Материал</label>
@@ -74,18 +75,18 @@
                 <label>Цвет</label>
                 <select class="form-control" id="material_color" name="material_color"></select>
                 <label>Площадь потолка</label>
-                <input name="celling_s" class="form-control" value="{{ order.s_celling }}" type="text" placeholder="Площадь потолка">
+                <input name="celling_s" class="form-control" value="0.0" type="text" placeholder="Площадь потолка">
                 <label>Пеиметр потолка</label>
-                <input name="celling_p" value="{{ order.p_celling }}" class="form-control" type="text" placeholder="Периметр потолка">
+                <input name="celling_p" value="0.0" class="form-control" type="text" placeholder="Периметр потолка">
                 <label>Периметр гарпуна</label>
-                <input name="garpun_p" value="{{ order.p_garpun }}" class="form-control" type="text" placeholder="Периметр гарпуна">
+                <input name="garpun_p" value="0.0" class="form-control" type="text" placeholder="Периметр гарпуна">
                 <label>Периметр кривых</label>
-                <input name="p_curve" value="{{ order.p_curve }}" class="form-control" type="text" placeholder="Периметр кривых">
+                <input name="p_curve" value="0.0" class="form-control" type="text" placeholder="Периметр кривых">
                 <label>Площадь полотна</label>
                 <input name="s_material" class="form-control" placeholder="Площадь потолка" value=0,0 type="text">
               <div class="modal-footer">
                 {% if not user.groups.all.0.name == "dealer" %}
-                <select class="form-control pull-left" style="width: 20%;">
+                <select name='order_status' class="form-control pull-left" style="width: 20%;">
                     <option value="1">Принят</option>
                     <option value="2">Обработан</option>
                     <option value="3">Готов</option>
@@ -99,6 +100,92 @@
             </div>
             </div>
         </form>
+      </div>
+    </div>
+    <div class="modal fade" id="view-order-tmpl" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true" >
+      <div class="modal-dialog" role="document" style="width: 80%">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h3 class="modal-title" id="viewModalLabel">Просмотр заказа <span class="pull-right">Дата заказа: <span class="info_text" id="order_date"></span></span></h3>
+          </div>
+          <div class="modal-body">
+              <div class="row">
+                  <div class="container-fluid" style="padding-bottom: 50px;margin-left: 70px">
+                      <a id="file_download" class="btn btn-success pull-right">Скачать файл</a>
+                      <h4 style="color: rgba(180,180,180,0.82)">Диллер</h4><hr class="blank_hr">
+                      <div class="col-sm-12">
+                          <p class="info-text">№ Диллера: <label class="pull-right" id="view_order_dealer_id"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Имя Диллера: <label class="pull-right" id="view_order_dealer_name"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Фирма Диллера: <label class="pull-right" id="view_order_dealer_firm_name"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">УНП Фирмы: <label class="pull-right" id="view_order_dealer_unp"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Email Диллера: <label class="pull-right" id="view_order_dealer_email"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Телефон Диллера: <label class="pull-right" id="view_order_dealer_phone"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Счёт: <label class="pull-right"  id="view_order_dealer_amount"></label></p>
+                      </div>
+                      <h4 style="color: rgba(180,180,180,0.82)">Группа материалов</h4><hr class="blank_hr">
+                      <div class="col-sm-12">
+                          <p class="info-text">№ Группы: <label class="pull-right" id="view_order_group_id"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Название Группы: <label class="pull-right" id="view_order_group_name"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Базовая цена: <label class="pull-right" id="view_order_group_default_price"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Скидка Дилера: <label class="pull-right" id="view_order_group_discount"></label></p>
+                      </div>
+                      <h4 style="color: rgba(180,180,180,0.82)">Материал</h4><hr class="blank_hr">
+                      <div class="col-sm-12">
+                          <p class="info-text">№ Материала: <label class="pull-right" id="view_order_material_id"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Название Материала: <label class="pull-right" id="view_order_material_name"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Стоймость материала: <label class="pull-right" id="view_order_material_price"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Остаток на складе: <label class="pull-right" id="view_order_material_count_meters_pagon"></label></p>
+                      </div>
+                      <h4 style="color: rgba(180,180,180,0.82)">Данные</h4><hr class="blank_hr">
+                      <div class="col-sm-12">
+                          <p class="info-text">Перимметр полка: <label class="pull-right" id="view_order_p_celling"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Площадь потолка: <label class="pull-right" id="view_order_s_celling"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Перимметр кривых: <label class="pull-right" id="view_order_p_curve"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Перимметр гарпуна: <label class="pull-right" id="view_order_p_garpun"></label></p>
+                      </div>
+                      <div class="col-sm-12">
+                          <p class="info-text">Длинна полотна: <label class="pull-right" id="view_order_material_long"></label></p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <div class="pull-left">
+
+            </div>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+          </div>
+        </div>
       </div>
     </div>
 {% endblock %}
@@ -156,7 +243,7 @@
                     "data": 'celling_price'
                 } {% if not user.groups.all.0.name == "dealer" %},{
                     "data": function ( row, type, val, meta ) {
-                        return "<button class='btn btn-sm btn-success order-view' data-num="+row.id+" data-toogle='modal' data-target='#view-dealer-tmpl'><span class='glyphicon glyphicon-duplicate' style='padding:0px;'></span></button>"+
+                        return "<button class='btn btn-sm btn-success order-view' data-num="+row.id+" data-toogle='modal' data-target='#view-order-tmpl'><span class='glyphicon glyphicon-duplicate' style='padding:0px;'></span></button>"+
                                 "<button class='btn btn-sm btn-warning order-edit' data-num="+row.id+"><span class='glyphicon glyphicon-pencil' style='padding:0px;'></span></button>"+
                                 "<button class='btn btn-sm btn-danger order-delete' data-num="+row.id+"><span class='glyphicon glyphicon-remove' style='padding:0px;'></span></button>"
                     }

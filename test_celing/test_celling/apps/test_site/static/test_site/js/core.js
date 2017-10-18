@@ -19,6 +19,40 @@ $(document).on('click','#send_file',function (){
 
 });
 
+$(document).on('click', '.order-view', function(){
+    let order_id = $(this).data('num');
+    $.ajax({
+       url: 'order_info',
+       data: {order_id: order_id},
+       success: function(result){
+           let data = JSON.parse(result);
+           $('#file_download').attr('href','/media/'+data.file_link);
+           $('#view_order_dealer_id').html(data.dealer.id);
+           $('#view_order_dealer_name').html(data.dealer.dealer_name);
+           $('#view_order_dealer_firm_name').html(data.dealer.dealer_firm_name);
+           $('#view_order_dealer_unp').html(data.dealer.dealer_unp);
+           $('#view_order_dealer_email').html(data.dealer.dealer_email);
+           $('#view_order_dealer_phone').html(data.dealer.dealer_phone);
+           $('#view_order_dealer_amount').html(data.dealer.dealer_amount);
+           $('#view_order_group_id').html(data.material_group.id);
+           $('#view_order_group_name').html(data.material_group.name);
+           $('#view_order_group_default_price').html(data.material_group.default_price);
+           $('#view_order_group_discount').html(data.discount);
+           $('#view_order_material_id').html(data.celling.id);
+           $('#view_order_material_name').html(data.celling.name);
+           $('#view_order_material_price').html(data.celling.price);
+           $('#view_order_material_count_meters_pagon').html(data.celling.count_meters_pagon);
+           $('#view_order_p_celling').html(data.p_celling);
+           $('#view_order_s_celling').html(data.s_celling);
+           $('#view_order_p_garpun').html(data.p_garpun);
+           $('#view_order_p_curve').html(data.p_curve);
+           $('#view_order_material_long').html(data.material_long);
+           $('#order_date').html(data.order_date);
+           $('#view-order-tmpl').modal('show');
+       }
+   });
+});
+
 $(document).on('submit','form[action="add_material_api"]', function(){
     let data = $(this).serialize();
     $.ajax({
@@ -45,8 +79,6 @@ $(document).on('submit', 'form[action="add_order"]',function () {
             url: 'add_order',
             data: data,
             success: function (data) {
-                console.log(data);
-                alert(data);
                 window.location.href = './orders'
             }
         });
@@ -266,7 +298,7 @@ $(document).on('click','.discount',function(){
         type: 'post',
         data: data,
         success: function (data){
-            console.log(data);
+
         }
     });
     return false;
@@ -486,8 +518,6 @@ $(document).on('click', '.order-delete', function(){
         type: 'post',
         data: {order_id: order_id, csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()},
         success: function(result){
-            console.log(result);
-
             $('#orders-table').DataTable().ajax.reload();
         }
     });
@@ -501,10 +531,44 @@ $(document).on('click', '.order-edit', function(){
        data: {order_id: order_id},
        success: function(result){
            let data = JSON.parse(result);
-           $('#material_group').val()
+           $('input[name="order_id"]').val(data.id);
+           $('#material_group').val(data.material_group.id);
+           $('#material_group').trigger('change');
+           $('#dealer_select').val(data.dealer.id);
+           $('#dealer_select').trigger('change');
+           $('input[name="material_long_m"]').val(data.material_long);
+           $('input[name="celling_s"]').val(data.s_celling);
+           $('input[name="celling_p"]').val(data.p_celling);
+           $('input[name="garpun_p"]').val(data.p_garpun);
+           $('input[name="p_curve"]').val(data.p_curve);
+           $('select[name="order_status"]').val(data.order_status);
+           window.setTimeout(function () {
+              let material_color = $('#material_color');
+              material_color.val(data.material_color.id);
+              material_color.trigger('change');
+              if(data.celling.name !== 'None'){
+                let material_select = $('#material_select');
+                material_select.val(data.celling.id);
+                material_select.trigger('change');
+              }
+           },1500);
+
            $('#order_edit_tmpl').modal('show');
-           console.log(data);
        }
    });
 
+});
+
+$(document).on('submit', 'form[action="edit_order"]', function(){
+    let data = $(this).serialize();
+    $.ajax({
+        url: 'edit_order',
+        type: 'POST',
+        data: data,
+        success: function (result) {
+            $('#order_edit_tmpl').modal('hide');
+            $('#orders-table').DataTable().ajax.reload();
+        }
+    });
+    return false;
 });

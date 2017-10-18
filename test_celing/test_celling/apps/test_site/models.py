@@ -11,7 +11,7 @@ class MaterialColor(models.Model):
     for_remove = models.BooleanField(default=False)
 
     def to_json(self):
-        return dict(id=self.id, name=self.name, for_remove = self.for_remove)
+        return dict(id=self.id, name=self.name, for_remove=self.for_remove)
 
 
 class MaterialGroup(models.Model):
@@ -91,6 +91,7 @@ class Order(models.Model):
     id = models.AutoField(primary_key=True)
     celling = models.ForeignKey(Celling, null=True)
     material_group = models.ForeignKey(MaterialGroup, null=True)
+    color_model = models.ForeignKey(MaterialColor, null=False)
     dealer_obj = models.ForeignKey(Dealer, default=None, null=True)
     s_celling = models.FloatField(null=True)
     p_celling = models.FloatField(null=True)
@@ -98,9 +99,11 @@ class Order(models.Model):
     p_curve = models.FloatField(null=True)
     material_long = models.FloatField(null=True, default=0.0)
     celling_price = models.FloatField(null=True)
+    s_material = models.FloatField(null=False, default=0.0)
     order_status = models.IntegerField(null=False, default=1)
     order_date = models.DateField(default=datetime.datetime.now, blank=False)
-    for_remove = models.BooleanField(null=False, default=False)
+    file_name = models.CharField(max_length=256, null=True)
+    for_remove = models.BooleanField(null=False, default=None)
 
     def to_json(self):
         result = dict(
@@ -113,6 +116,8 @@ class Order(models.Model):
             celling_price=self.celling_price,
             order_status=self.order_status,
             order_date=str(self.order_date),
+            material_group=self.material_group.to_json(),
+            file_link=self.file_name,
             for_remove=self.for_remove
         )
         if self.dealer_obj is not None:
@@ -123,6 +128,10 @@ class Order(models.Model):
             result['celling'] = self.celling.to_json()
         else:
             result['celling'] = {'name': 'None'}
+        if self.color_model.id:
+            result['material_color'] = self.color_model.to_json()
+        else:
+            result['material_color'] = None
         return result
 
 
